@@ -13,14 +13,14 @@ dict_char_to_int = {'O': '0',
                     'I': '1',
                     'J': '3',
                     'A': '4',
-                    'G': '6',
+                    # 'G': '6',
                     'S': '5'}
 
 dict_int_to_char = {'0': 'O',
                     '1': 'I',
                     '3': 'J',
                     '4': 'A',
-                    '6': 'G',
+                    # '6': 'G',
                     '5': 'S'}
 
 
@@ -148,12 +148,12 @@ def read_license_plate(license_plate_crop):
 
     for detection in detections:
         bbox, text, score = detection
-        print("text", text)
         text = text.upper().replace(' ', '')
         if license_complies_format(text):
+            # return text,score
             return format_license(text), score
 
-    return None, None
+    # return None, None
 
 
 def get_car(license_plate, vehicle_track_ids):
@@ -208,13 +208,14 @@ def tesseract_read_license_plate(license_plate_crop):
     custom_config = r'-c tessedit_char_whitelist=ABEKMHOPCTYX0123456789 --psm 6'
 
     # Use Tesseract to do OCR on the image
-    text = pytesseract.image_to_string(license_plate_crop,config=custom_config)
+    text = pytesseract.image_to_string(license_plate_crop, config=custom_config)
 
     text = text.upper().replace(' ', '')
     if license_complies_format(text):
         return format_license(text), None  # PyTesseract does not return a confidence score
 
     return text, None
+
 
 def find_largest_(image):
     """
@@ -235,11 +236,13 @@ def find_largest_(image):
     # cv2.waitKey(0)
     # Find contours
     contours, _ = cv2.findContours(gray, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    #draw contours
+    # draw contours
     # cv2.drawContours(image, contours, -1, (0, 255, 0), 2)
     # Find the largest contour
     largest_contour = max(contours, key=cv2.contourArea)
-
+    cv2.drawContours(image, [largest_contour], -1, (0, 255, 0), 2)
+    cv2.imshow("largest_contour", image)
+    cv2.waitKey(0)
     # Get the bounding rectangle of the largest contour
     x, y, w, h = cv2.boundingRect(largest_contour)
 

@@ -1,41 +1,59 @@
-#find the largest white rectangle in image
 import cv2
+import numpy as np
+from ultralytics import YOLO
 
+import util
 
-def find_largest_(image):
-    """
-    Find the largest white rectangle in the image.
+print(cv2.__version__)
 
-    Args:
-        image (np.array): Image.
+cascade_src = 'assets/cars.xml'
+# video_src = 'assets/sample.mp4'
+# video_src = 'dataset/video2.avi'
+# video_src = 'assets/sample2.mp4'
 
-    Returns:
-        tuple: Coordinates of the largest white rectangle.
-    """
-    # Convert the image to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+# cap = cv2.VideoCapture(video_src)
+car_cascade = cv2.CascadeClassifier(cascade_src)
+license_plate_detector = YOLO('assets/license_plate_detector.pt')
 
-    # Apply a binary threshold to get a binary image
-    _, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
-    cv2.imshow("binary",binary)
+img = cv2.imread('assets/images/20240916_150924.jpg')
+img = cv2.resize(img, (1920, 1080))
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+cars = car_cascade.detectMultiScale(gray, 1.1, 1)
+
+car_region = None
+license_plates_list = []
+license_plates = license_plate_detector(img)[0]
+if license_plates is None or len(license_plates) == 0:
+    print('No license plates detected')
+
+    text_size = cv2.getTextSize('No license plates detected', cv2.FONT_HERSHEY_SIMPLEX, 1, 2)[0]
+
+    # Calculate the center of the image
+    x_center = img.shape[1] // 2
+    y_center = img.shape[0] // 2
+
+    # Calculate the bottom left corner of the text
+    x_text = x_center - text_size[0] // 2
+    y_text = y_center + text_size[1] // 2
+
+    # Put the text in the center of the image
+    cv2.putText(img, 'No license plates detected', (x_text, y_text), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+    cv2.imshow('video', img)
     cv2.waitKey(0)
-    # Find contours
-    contours, _ = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    print(len(contours))
-    #draw contours
-    # cv2.drawContours(image, contours, -1, (0, 255, 0), 2)
-    # Find the largest contour
-    largest_contour = max(contours, key=cv2.contourArea)
+    exit()
+license_plates_list.append(license_plates)
 
-    # Get the bounding rectangle of the largest contour
-    x, y, w, h = cv2.boundingRect(largest_contour)
+for license_plate in license_plates.boxes.data.tolist():
+    x1, y1, x2, y2, score, class_id = license_plate
+    license_plate_region = img.copy()[int(y1):int(y2), int(x1):int(x2)]
+    cv2.imshow("license_plate_region",license_plate_region)
+    cv2.waitKey(1)
+    license_plate_text, license_plate_text_score = util.read_license_plate(license_plate_region)
+    cv2.rectangle(img, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+    cv2.putText(img, license_plate_text, (int(x1), int(y1)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
 
-    return x, y, x + w, y + h
+    # print(license_plate_text)
 
-image = cv2.imread('assets/results/license_plate_crop.jpg')
-x1, y1, x2, y2 = find_largest_(image)
-#draw the rectangle on the image
-cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
-cv2.imshow('image', image)
+
+cv2.imshow('video', img)
 cv2.waitKey(0)
-cv2.imwrite('assets/results/license_plate_crop_largest.jpg', image)
