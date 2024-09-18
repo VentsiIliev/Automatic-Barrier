@@ -22,46 +22,6 @@ dict_int_to_char = {'0': 'O',
                     '4': 'A',
                     # '6': 'G',
                     '5': 'S'}
-
-
-def write_csv(results, output_path):
-    """
-    Write the results to a CSV file.
-
-    Args:
-        results (dict): Dictionary containing the results.
-        output_path (str): Path to the output CSV file.
-    """
-    with open(output_path, 'w') as f:
-        f.write('{},{},{},{},{},{},{}\n'.format('frame_nmr', 'car_id', 'car_bbox',
-                                                'license_plate_bbox', 'license_plate_bbox_score', 'license_number',
-                                                'license_number_score'))
-
-        for frame_nmr in results.keys():
-            for car_id in results[frame_nmr].keys():
-                # print(results[frame_nmr][car_id])
-                if 'car' in results[frame_nmr][car_id].keys() and \
-                        'license_plate' in results[frame_nmr][car_id].keys() and \
-                        'text' in results[frame_nmr][car_id]['license_plate'].keys():
-                    f.write('{},{},{},{},{},{},{}\n'.format(frame_nmr,
-                                                            car_id,
-                                                            '[{} {} {} {}]'.format(
-                                                                results[frame_nmr][car_id]['car']['bbox'][0],
-                                                                results[frame_nmr][car_id]['car']['bbox'][1],
-                                                                results[frame_nmr][car_id]['car']['bbox'][2],
-                                                                results[frame_nmr][car_id]['car']['bbox'][3]),
-                                                            '[{} {} {} {}]'.format(
-                                                                results[frame_nmr][car_id]['license_plate']['bbox'][0],
-                                                                results[frame_nmr][car_id]['license_plate']['bbox'][1],
-                                                                results[frame_nmr][car_id]['license_plate']['bbox'][2],
-                                                                results[frame_nmr][car_id]['license_plate']['bbox'][3]),
-                                                            results[frame_nmr][car_id]['license_plate']['bbox_score'],
-                                                            results[frame_nmr][car_id]['license_plate']['text'],
-                                                            results[frame_nmr][car_id]['license_plate']['text_score'])
-                            )
-        f.close()
-
-
 # def license_complies_format(text):
 #     """
 #     Check if the license plate text complies with the required format.
@@ -86,29 +46,24 @@ def write_csv(results, output_path):
 #     else:
 #         return False
 
-def license_complies_format(text):
-    """
-    Check if the license plate text complies with the required format.
+import re
 
-    Args:
-        text (str): License plate text.
 
-    Returns:
-        bool: True if the license plate complies with the format, False otherwise.
-    """
-    if len(text) != 7:
-        return False
-
-    if (text[0] in string.ascii_uppercase or text[0] in dict_int_to_char.keys()) and \
-            (text[1] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] or text[1] in dict_char_to_int.keys()) and \
-            (text[2] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] or text[2] in dict_char_to_int.keys()) and \
-            (text[3] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] or text[3] in dict_char_to_int.keys()) and \
-            (text[4] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] or text[4] in dict_char_to_int.keys()) and \
-            (text[5] in string.ascii_uppercase or text[5] in dict_int_to_char.keys()) and \
-            (text[6] in string.ascii_uppercase or text[6] in dict_int_to_char.keys()):
-        return True
-    else:
-        return False
+# def license_complies_format(text):
+#     """
+#     Check if the license plate text complies with the Bulgarian license plate format.
+#
+#     Args:
+#         text (str): License plate text.
+#
+#     Returns:
+#         bool: True if the license plate complies with the format, False otherwise.
+#     """
+#     # Define the regex pattern for allowed Bulgarian license plate format
+#     pattern = r"^[ABEKMHOPCTYX]{1,2}[0123456789]{4}[ABEKMHOPCTYX]{2}$"
+#
+#     # Return True if the text matches the pattern, otherwise return False
+#     return bool(re.match(pattern, text))
 
 
 def format_license(text):
@@ -121,10 +76,14 @@ def format_license(text):
     Returns:
         str: Formatted license plate text.
     """
+
+    # if len(text) != 7:
+    #     return text
+
     license_plate_ = ''
     mapping = {0: dict_int_to_char, 1: dict_int_to_char, 4: dict_int_to_char, 5: dict_int_to_char, 6: dict_int_to_char,
                2: dict_char_to_int, 3: dict_char_to_int}
-    for j in [0, 1, 2, 3, 4, 5, 6]:
+    for j in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
         if text[j] in mapping[j].keys():
             license_plate_ += mapping[j][text[j]]
         else:
@@ -133,27 +92,29 @@ def format_license(text):
     return license_plate_
 
 
-def read_license_plate(license_plate_crop):
-    """
-    Read the license plate text from the given cropped image.
-
-    Args:
-        license_plate_crop (PIL.Image.Image): Cropped image containing the license plate.
-
-    Returns:
-        tuple: Tuple containing the formatted license plate text and its confidence score.
-    """
-
-    detections = reader.readtext(license_plate_crop)
-
-    for detection in detections:
-        bbox, text, score = detection
-        text = text.upper().replace(' ', '')
-        if license_complies_format(text):
-            # return text,score
-            return format_license(text), score
-
-    # return None, None
+# def read_license_plate(license_plate_crop):
+#     """
+#     Read the license plate text from the given cropped image.
+#
+#     Args:
+#         license_plate_crop (PIL.Image.Image): Cropped image containing the license plate.
+#
+#     Returns:
+#         tuple: Tuple containing the formatted license plate text and its confidence score.
+#     """
+#
+#     detections = reader.readtext(license_plate_crop)
+#
+#     for detection in detections:
+#         bbox, text, score = detection
+#         text = text.upper().replace(' ', '')
+#         text = text.replace('O', '0')
+#         print(text, score)
+#         if license_complies_format(text):
+#             return text, score
+#             # return format_license(text), score
+#
+#     return None, 0
 
 
 def get_car(license_plate, vehicle_track_ids):
@@ -183,67 +144,33 @@ def get_car(license_plate, vehicle_track_ids):
 
     return -1, -1, -1, -1, -1
 
-
-def tesseract_read_license_plate(license_plate_crop):
-    """
-    Read the license plate text from the given cropped image.
-
-    Args:
-        license_plate_crop (numpy.ndarray): Cropped image containing the license plate.
-
-    Returns:
-        tuple: Tuple containing the formatted license plate text and its confidence score.
-    """
-    # Convert the numpy array to a PIL Image
-    license_plate_crop = Image.fromarray(license_plate_crop)
-
-    # Convert the image to grayscale
-    license_plate_crop = license_plate_crop.convert('L')
-
-    # Set the path to the tesseract executable
-    pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Update this path
-
-    # Specify a whitelist of characters
-    # custom_config = r'-c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 --psm 6'
-    custom_config = r'-c tessedit_char_whitelist=ABEKMHOPCTYX0123456789 --psm 6'
-
-    # Use Tesseract to do OCR on the image
-    text = pytesseract.image_to_string(license_plate_crop, config=custom_config)
-
-    text = text.upper().replace(' ', '')
-    if license_complies_format(text):
-        return format_license(text), None  # PyTesseract does not return a confidence score
-
-    return text, None
-
-
-def find_largest_(image):
-    """
-    Find the largest white rectangle in the image.
-
-    Args:
-        image (np.array): Image.
-
-    Returns:
-        tuple: Coordinates of the largest white rectangle.
-    """
-    # Convert the image to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # Apply a binary threshold to get a binary image
-    _, binary = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
-    # cv2.imshow("binary",binary)
-    # cv2.waitKey(0)
-    # Find contours
-    contours, _ = cv2.findContours(gray, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    # draw contours
-    # cv2.drawContours(image, contours, -1, (0, 255, 0), 2)
-    # Find the largest contour
-    largest_contour = max(contours, key=cv2.contourArea)
-    cv2.drawContours(image, [largest_contour], -1, (0, 255, 0), 2)
-    cv2.imshow("largest_contour", image)
-    cv2.waitKey(0)
-    # Get the bounding rectangle of the largest contour
-    x, y, w, h = cv2.boundingRect(largest_contour)
-
-    return x, y, x + w, y + h
+# def find_largest_(image):
+#     """
+#     Find the largest white rectangle in the image.
+#
+#     Args:
+#         image (np.array): Image.
+#
+#     Returns:
+#         tuple: Coordinates of the largest white rectangle.
+#     """
+#     # Convert the image to grayscale
+#     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+#
+#     # Apply a binary threshold to get a binary image
+#     _, binary = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
+#     # cv2.imshow("binary",binary)
+#     # cv2.waitKey(0)
+#     # Find contours
+#     contours, _ = cv2.findContours(gray, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+#     # draw contours
+#     # cv2.drawContours(image, contours, -1, (0, 255, 0), 2)
+#     # Find the largest contour
+#     largest_contour = max(contours, key=cv2.contourArea)
+#     cv2.drawContours(image, [largest_contour], -1, (0, 255, 0), 2)
+#     cv2.imshow("largest_contour", image)
+#     cv2.waitKey(0)
+#     # Get the bounding rectangle of the largest contour
+#     x, y, w, h = cv2.boundingRect(largest_contour)
+#
+#     return x, y, x + w, y + h
