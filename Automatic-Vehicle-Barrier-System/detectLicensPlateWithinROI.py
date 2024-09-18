@@ -12,7 +12,6 @@ from LicensePlate import LicensePlate
 from datetime import datetime
 
 from LicensePlateReader import LicensePlateReader
-from desckew import deskew
 
 # camera = cv2.VideoCapture(1)
 camera = cv2.VideoCapture('assets/sample2.mp4')
@@ -22,7 +21,7 @@ camera = cv2.VideoCapture('assets/sample2.mp4')
 # load license plate detection model
 # license_plate_detector = YOLO('assets/license_plate_detector.pt')
 license_plates_detector = LicencePlateDetector('assets/license_plate_detector.pt')
-license_plate_reader = LicensePlateReader('r"^[ABEKMHOPCTYX]{1,2}[0123456789]{4}[ABEKMHOPCTYX]{2}$"')
+license_plate_reader = LicensePlateReader("^[ABEKMHOPCTYX]{1,2}[0123456789]{4}[ABEKMHOPCTYX]{2}$")
 target_classes = [2, 3, 5, 7]
 roi_x1, roi_y1, roi_x2, roi_y2 = 400, 400, 1280, 600  # adjust these values as needed
 
