@@ -39,3 +39,8 @@ class AdminPanel(QWidget):
 
     def button3_clicked(self):
         print("Button 3 clicked")
+
+    def resizeEvent(self, event):
+        # Adjust the size of the AdminPanel to match the new size of its parent widget
+        self.resize(self.parent().size())
+        super().resizeEvent(event)

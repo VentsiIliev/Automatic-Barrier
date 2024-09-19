@@ -33,3 +33,8 @@ class LoginLayout(QWidget):
             self.hide()
         else:
             print('Invalid username or password')
+
+    def resizeEvent(self, event):
+        # Adjust the size of the LoginLayout to match the new size of its parent widget
+        self.resize(self.parent().size())
+        super().resizeEvent(event)
