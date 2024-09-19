@@ -6,8 +6,8 @@ from model.access_events.AccessEventType import AccessEventType
 class Database:
     def __init__(self, db_name):
         self.db_name = db_name
-        self.access_denied_table = "logs/access_denied.csv"
-        self.access_granted_table = "logs/access_granted.csv"
+        self.access_denied_table = "database/access_denied.csv"
+        self.access_granted_table = "database/access_granted.csv"
 
     def get_data(self, query):
         # Connect to the database and get the data
@@ -30,7 +30,8 @@ class Database:
         event_type = event.type.value
         event_time = event.time.strftime('%Y-%m-%d %H:%M:%S')  # Format datetime for CSV
         registration_number = event.registration_number
-        row = f"{event_type},{event_time},{registration_number}\n"
+        direction = event.direction
+        row = f"{event_type},{event_time},{registration_number},{direction}\n"
 
         # Check if the file exists and create it with the header if necessary
         if not os.path.exists(self.access_granted_table):
@@ -47,7 +48,8 @@ class Database:
         event_type = event.type.value
         event_time = event.time.strftime('%Y-%m-%d %H:%M:%S')  # Format datetime for CSV
         registration_number = event.registration_number
-        row = f"{event_type},{event_time},{registration_number}\n"
+        direction = event.direction
+        row = f"{event_type},{event_time},{registration_number},{direction}\n"
 
         # Check if the file exists and create it with the header if necessary
         if not os.path.exists(self.access_denied_table):

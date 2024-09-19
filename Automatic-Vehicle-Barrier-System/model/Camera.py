@@ -12,6 +12,8 @@
 import cv2
 import numpy as np  # Import numpy
 
+from config.CameraSetting import CameraSetting
+
 
 class Camera:
     """
@@ -31,7 +33,7 @@ class Camera:
         get_frame_size(): Returns the frame size as a tuple.
     """
 
-    def __init__(self, cameraIndex, width, height):
+    def __init__(self, settings):
         """
         Constructs all the necessary attributes for the camera object.
 
@@ -40,11 +42,11 @@ class Camera:
             width (int): The width of the camera feed.
             height (int): The height of the camera feed.
         """
-        self.setCameraIndex(cameraIndex)
-        self.setWidth(width)
-        self.setHeight(height)
+        self.setCameraIndex(settings[CameraSetting.INDEX.value])
+        self.setWidth(int(settings[CameraSetting.WIDTH.value]))
+        self.setHeight(int(settings[CameraSetting.HEIGHT.value]))
 
-        self.cap = self.initCap(cameraIndex, height, width)
+        self.cap = self.initCap(self.cameraIndex, self.width, self.height)
 
     def initCap(self, cameraIndex, height, width):
         """
@@ -119,12 +121,4 @@ class Camera:
         self.cap.release()
 
 
-if __name__ == "__main__":
 
-    camera = Camera(cameraIndex=0, width=1920, height=1080)
-    frame = camera.capture()
-    if frame is None:
-        print("Frame capture failed")
-    else:
-        print("Frame captured successfully ")
-    camera.stopCapture()
