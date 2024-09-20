@@ -100,9 +100,9 @@ class AVBS:
                         self.barrier_control.close()
 
                 # Handle key press (ESC to quit)
-                if cv2.waitKey(1) & 0xFF == 27:
-                    self.settings_manager.save_settings()
-                    break
+                # if cv2.waitKey(1) & 0xFF == 27:
+                #     self.settings_manager.save_settings()
+                #     break
         except Exception as e:
             traceback.print_exc()
 
