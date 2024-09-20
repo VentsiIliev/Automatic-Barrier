@@ -12,7 +12,8 @@ class CSVWhitelistedVehiclesRepository(BaseCSVRepository):
 
     def get_all(self):
         vehicles = []
-        for row in self._read_rows():
+        rows = self._read_rows()
+        for row in rows:
             # Create an event from the row
             registration_number = row[REGISTRATION_NUMBER]
             owner = row[OWNER]
@@ -31,8 +32,20 @@ class CSVWhitelistedVehiclesRepository(BaseCSVRepository):
         return vehicle
 
     def insert(self, vehicle):
+        print("inserting vehicle")
         if self.get(vehicle) is None:
-            super().insert(**{REGISTRATION_NUMBER: vehicle.registration_number, OWNER: vehicle.owner, ACCESS_LEVEL: vehicle.access_level})
+            super().insert(**{REGISTRATION_NUMBER: vehicle.registration_number, OWNER: vehicle.owner,
+                              ACCESS_LEVEL: vehicle.access_level})
 
-    def delete(self, vehicle):
-        super().delete(vehicle.registration_number)
+    def delete(self, registration_number):
+        super().delete(registration_number)
+
+    def update(self, registration_number, owner, access_level):
+        print("Updating")
+        rows = self._read_rows()
+        for row in rows:
+            if row[self.fieldnames[0]] == registration_number:
+                row[self.fieldnames[0]] = registration_number
+                row[self.fieldnames[1]] = owner
+                row[self.fieldnames[2]] = access_level
+        super().update(rows)

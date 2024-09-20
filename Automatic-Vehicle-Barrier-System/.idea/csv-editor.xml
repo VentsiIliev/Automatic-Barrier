@@ -10,6 +10,20 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\control_panel\database\whitelisted_vehicles.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\database\New folder\vehicles_on_premises.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\database\New folder\whitelisted_vehicles.csv">
           <value>
             <Attribute>

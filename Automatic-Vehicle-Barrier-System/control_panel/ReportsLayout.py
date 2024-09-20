@@ -87,8 +87,6 @@ class ReportsLayout(QWidget):
             base_directory = Path(__file__).resolve().parent.parent  # This goes up two levels
             database_directory = base_directory / 'database'  # Ensure this points to the right location
             access_granted_path = database_directory / Constants.ACCESS_GRANTED_TABLE
-            print(f"Access Granted Path: {access_granted_path.resolve()}")
-
             access_denied_path = database_directory / Constants.ACCESS_DENIED_TABLE
             whitelisted_vehicles_path = database_directory / Constants.WHITELISTED_VEHICLES_TABLE
 
@@ -99,9 +97,6 @@ class ReportsLayout(QWidget):
             if not access_denied_path.exists():
                 QMessageBox.warning(self, "File Not Found", f"File not found: {access_denied_path}")
                 return
-            # if not whitelisted_vehicles_path.exists():
-            #     QMessageBox.warning(self, "File Not Found", f"File not found: {whitelisted_vehicles_path}")
-            #     return
 
             # Load data
             data_granted = pd.read_csv(access_granted_path)
@@ -119,8 +114,7 @@ class ReportsLayout(QWidget):
             # Apply additional filters
             if reg:
                 data = data[data['Registration Number'].str.upper() == reg]
-            # if date_time:
-            #     data = data[data['Date Time'].str.startswith(date_time)]
+
             if direction and direction != "All":
                 data = data[data['Direction'] == direction]
 
@@ -132,14 +126,12 @@ class ReportsLayout(QWidget):
 
     def populateReportTable(self, data):
         """Populate the report table with the filtered data."""
-        # Print the columns to verify their names
-        print("DataFrame columns:", data.columns.tolist())
-
         self.reportTable.setRowCount(len(data))
 
         for row in range(len(data)):
-            self.reportTable.setItem(row, 0, QTableWidgetItem(data.iloc[row]['Registration Number']))  # Adjusted
-            self.reportTable.setItem(row, 1, QTableWidgetItem(data.iloc[row]['Date Time']))  # Adjusted
-            self.reportTable.setItem(row, 2, QTableWidgetItem(data.iloc[row]['Direction']))  # Adjusted
-            # self.reportTable.setItem(row, 3, QTableWidgetItem(data.iloc[row]['Access Level']))  # Adjusted
-            # self.reportTable.setItem(row, 4, QTableWidgetItem(data.iloc[row]['Access Status']))  # Adjusted
+            self.reportTable.setItem(row, 0, QTableWidgetItem(data.iloc[row]['Registration Number']))
+            self.reportTable.setItem(row, 1, QTableWidgetItem(data.iloc[row]['Date']))
+            self.reportTable.setItem(row, 2, QTableWidgetItem(data.iloc[row]['Time']))
+            self.reportTable.setItem(row, 3, QTableWidgetItem(data.iloc[row]['Direction']))
+            self.reportTable.setItem(row, 4, QTableWidgetItem(data.iloc[row]['Event Type']))  # Assuming 'Event Type' contains Access Level
+            # self.reportTable.setItem(row, 5, QTableWidgetItem(data.iloc[row]['Access Status']))  # Adjusted based on file structure

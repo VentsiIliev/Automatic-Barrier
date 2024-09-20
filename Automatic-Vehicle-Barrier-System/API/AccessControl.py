@@ -2,14 +2,15 @@ import csv
 from datetime import datetime
 
 from API.Database import Database
+from API.SingletonDatabase import SingletonDatabase
 from model.access_events.AccessLevel import AccessLevel
 
 
 class AccessControl:
-    def __init__(self, database: Database, working_hours: str):
+    def __init__(self,  working_hours: str):
         # Load whitelisted vehicles and their access levels from the CSV file
         # self.whitelisted_vehicles = self.load_whitelisted_vehicles(csv_file)
-        self.database = database
+
         self.working_hours = working_hours
 
     def load_whitelisted_vehicles(self, csv_file):
@@ -48,7 +49,7 @@ class AccessControl:
 
     def check_access(self, registration_number):
         """Check if the registration number and access level are in the whitelist."""
-        vehicles = self.database.get_repo('whitelisted').get_all()
+        vehicles = SingletonDatabase().getInstance().get_repo('whitelisted').get_all()
         vechicle = None
         for entry in vehicles:
             if entry.registration_number == registration_number:

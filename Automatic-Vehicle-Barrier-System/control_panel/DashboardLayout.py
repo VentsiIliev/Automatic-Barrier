@@ -1,10 +1,16 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, \
     QLineEdit, QComboBox, QPushButton, QHBoxLayout, QMessageBox
 
+from API.SingletonDatabase import SingletonDatabase
+from model.Vehicle import Vehicle
+from model.access_events.AccessLevel import AccessLevel
+from repositories.csv_repositories.Constants import ACCESS_LEVEL, REGISTRATION_NUMBER, OWNER
+
+
 class DashboardLayout(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.whitelisted_vehicles = []  # Store whitelisted vehicles
+        self.selected_vehicle = None  # Track the currently selected vehicle
         self.initUI()
 
     def initUI(self):
@@ -22,28 +28,39 @@ class DashboardLayout(QWidget):
 
         # Vehicle Table
         self.vehicleTable = QTableWidget()
-        self.vehicleTable.setColumnCount(2)
-        self.vehicleTable.setHorizontalHeaderLabels(["Registration", "Access Level"])
+        self.vehicleTable.setColumnCount(3)  # Adding Owner column
+        self.vehicleTable.setHorizontalHeaderLabels(["Registration", "Access Level", "Owner"])
+        self.vehicleTable.itemSelectionChanged.connect(self.on_vehicle_selected)  # Handle row selection
         layout.addWidget(self.vehicleTable)
 
-        # Add Vehicle Section
+        # Add/Update Vehicle Section
         addVehicleLayout = QHBoxLayout()
-        addVehicleLabel = QLabel("Add New Vehicle:", self)
+        addVehicleLabel = QLabel("Vehicle Registration:", self)
         self.addVehicleInput = QLineEdit(self)
         self.addVehicleInput.setPlaceholderText("Enter Registration")
 
         addAccessLevelLabel = QLabel("Access Level:", self)
         self.addAccessLevelInput = QComboBox(self)
-        self.addAccessLevelInput.addItems(["Admin", "User", "Guest"])
+        self.addAccessLevelInput.addItems([level.name for level in AccessLevel])
+
+        addOwnerLabel = QLabel("Owner:", self)
+        self.addOwnerInput = QLineEdit(self)
+        self.addOwnerInput.setPlaceholderText("Enter Owner")
 
         addVehicleButton = QPushButton("Add Vehicle", self)
         addVehicleButton.clicked.connect(self.addVehicle)
+
+        updateVehicleButton = QPushButton("Update Vehicle", self)  # New update button
+        updateVehicleButton.clicked.connect(self.updateVehicle)
 
         addVehicleLayout.addWidget(addVehicleLabel)
         addVehicleLayout.addWidget(self.addVehicleInput)
         addVehicleLayout.addWidget(addAccessLevelLabel)
         addVehicleLayout.addWidget(self.addAccessLevelInput)
+        addVehicleLayout.addWidget(addOwnerLabel)
+        addVehicleLayout.addWidget(self.addOwnerInput)
         addVehicleLayout.addWidget(addVehicleButton)
+        addVehicleLayout.addWidget(updateVehicleButton)
 
         layout.addLayout(addVehicleLayout)
 
@@ -70,7 +87,7 @@ class DashboardLayout(QWidget):
 
         searchAccessLevelLabel = QLabel("Access Level:", self)
         self.searchAccessLevelInput = QComboBox(self)
-        self.searchAccessLevelInput.addItems(["", "Admin", "User", "Guest"])  # Add empty string for "any"
+        self.searchAccessLevelInput.addItems(["Any"] + [level.name for level in AccessLevel])
 
         searchButton = QPushButton("Search", self)
         searchButton.clicked.connect(self.searchVehicle)
@@ -83,12 +100,6 @@ class DashboardLayout(QWidget):
 
         layout.addLayout(searchLayout)
 
-        # Placeholder data for whitelisted vehicles
-        self.whitelisted_vehicles = [
-            {"registration": "ABC123", "access_level": "User"},
-            {"registration": "XYZ789", "access_level": "Admin"}
-        ]
-
         # Load whitelisted vehicles into the table
         self.loadVehicleTable()
 
@@ -96,51 +107,120 @@ class DashboardLayout(QWidget):
 
     def loadVehicleTable(self):
         """Load the whitelisted vehicles into the table."""
-        self.vehicleTable.setRowCount(len(self.whitelisted_vehicles))
-        for row, vehicle in enumerate(self.whitelisted_vehicles):
-            self.vehicleTable.setItem(row, 0, QTableWidgetItem(vehicle["registration"]))
-            self.vehicleTable.setItem(row, 1, QTableWidgetItem(vehicle["access_level"]))
+        vehicles = SingletonDatabase().getInstance().get_repo('whitelisted').get_all()
+        self.vehicleTable.setRowCount(len(vehicles))
+
+        for row, vehicle in enumerate(vehicles):
+            registration_number = vehicle.registration_number
+            access_level = AccessLevel(vehicle.access_level).name  # Convert access level to name
+            owner = vehicle.owner  # Assume OWNER is in your CSV structure
+            self.vehicleTable.setItem(row, 0, QTableWidgetItem(registration_number))
+            self.vehicleTable.setItem(row, 1, QTableWidgetItem(access_level))
+            self.vehicleTable.setItem(row, 2, QTableWidgetItem(owner))
+
+    def on_vehicle_selected(self):
+        """Handle vehicle selection from the table."""
+        selected_row = self.vehicleTable.currentRow()
+
+        if selected_row >= 0:
+            self.selected_vehicle = self.vehicleTable.item(selected_row, 0).text()  # Store selected registration number
+
+            # Populate input fields with the selected vehicle's details
+            self.addVehicleInput.setText(self.vehicleTable.item(selected_row, 0).text())  # Registration
+            self.addAccessLevelInput.setCurrentText(self.vehicleTable.item(selected_row, 1).text())  # Access Level
+            self.addOwnerInput.setText(self.vehicleTable.item(selected_row, 2).text())  # Owner
+
+            # Populate the remove vehicle field
+            self.removeVehicleInput.setText(self.vehicleTable.item(selected_row, 0).text())  # Registration for removal
+
+    def updateVehicle(self):
+        """Update the selected vehicle's information."""
+        if not self.selected_vehicle:
+            QMessageBox.warning(self, 'Error', 'No vehicle selected.')
+            return
+
+        registration = self.addVehicleInput.text().upper()
+        access_level = self.addAccessLevelInput.currentText()
+        owner = self.addOwnerInput.text()
+
+        if not registration or not access_level or not owner:
+            QMessageBox.warning(self, 'Error', 'Please enter registration, access level, and owner.')
+            return
+
+        # Ask for confirmation before updating
+        confirmation = QMessageBox.question(self, 'Update Confirmation',
+                                            f"Are you sure you want to update vehicle {self.selected_vehicle}?",
+                                            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        if confirmation == QMessageBox.Yes:
+            access_level_value = AccessLevel[access_level].value
+            # Update the vehicle's information
+            vehicle_repo = SingletonDatabase().getInstance().get_repo('whitelisted')
+            vehicle_repo.update(registration, owner, access_level_value)  # Assume an update method exists
+
+            self.loadVehicleTable()
+            self.addVehicleInput.clear()
+            self.addOwnerInput.clear()
+            self.removeVehicleInput.clear()
+            self.selected_vehicle = None
 
     def addVehicle(self):
         """Add a new vehicle to the whitelist."""
         registration = self.addVehicleInput.text().upper()
         access_level = self.addAccessLevelInput.currentText()
+        owner = self.addOwnerInput.text()
 
-        if registration and access_level:
-            # Check if the vehicle is already in the list
-            for vehicle in self.whitelisted_vehicles:
-                if vehicle["registration"] == registration:
-                    QMessageBox.warning(self, 'Error', 'Vehicle is already whitelisted.')
-                    return
+        if not registration or not access_level or not owner:
+            QMessageBox.warning(self, 'Error', 'Please enter registration, access level, and owner.')
+            return
 
-            # Add the new vehicle
-            self.whitelisted_vehicles.append({"registration": registration, "access_level": access_level})
-            self.loadVehicleTable()
-            self.addVehicleInput.clear()
+        access_level_value = AccessLevel[access_level].value
+        vehicle = Vehicle(registration, owner, access_level_value)
+        vehicles = SingletonDatabase().getInstance().get_repo('whitelisted').get_all()
+
+        for v in vehicles:
+            if v.registration_number == registration:
+                QMessageBox.warning(self, 'Error', 'Vehicle is already whitelisted.')
+                return
+
+        SingletonDatabase().getInstance().get_repo('whitelisted').insert(vehicle)
+        self.loadVehicleTable()
+        self.addVehicleInput.clear()
+        self.addOwnerInput.clear()
 
     def removeVehicle(self):
         """Remove a vehicle from the whitelist."""
         registration = self.removeVehicleInput.text().upper()
 
         if registration:
-            self.whitelisted_vehicles = [v for v in self.whitelisted_vehicles if v["registration"] != registration]
-            self.loadVehicleTable()
-            self.removeVehicleInput.clear()
+            # Ask for confirmation before deleting
+            confirmation = QMessageBox.question(self, 'Delete Confirmation',
+                                                f"Are you sure you want to remove vehicle {registration}?",
+                                                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if confirmation == QMessageBox.Yes:
+                SingletonDatabase().getInstance().get_repo('whitelisted').delete(registration)
+                self.loadVehicleTable()
+                self.removeVehicleInput.clear()
 
     def searchVehicle(self):
         """Search vehicles by registration and access level."""
         search_reg = self.searchVehicleInput.text().upper()
         search_access_level = self.searchAccessLevelInput.currentText()
 
-        # Filter the vehicles
+        vehicles = SingletonDatabase().getInstance().get_repo('whitelisted').get_all()
         filtered_vehicles = []
-        for vehicle in self.whitelisted_vehicles:
-            if (not search_reg or vehicle["registration"] == search_reg) and \
-               (not search_access_level or vehicle["access_level"] == search_access_level):
+
+        for vehicle in vehicles:
+            access_level = AccessLevel(vehicle.access_level).name
+            if (not search_reg or vehicle.registration_number == search_reg) and \
+               (search_access_level == "Any" or access_level == search_access_level):
                 filtered_vehicles.append(vehicle)
 
-        # Update the table with filtered results
         self.vehicleTable.setRowCount(len(filtered_vehicles))
         for row, vehicle in enumerate(filtered_vehicles):
-            self.vehicleTable.setItem(row, 0, QTableWidgetItem(vehicle["registration"]))
-            self.vehicleTable.setItem(row, 1, QTableWidgetItem(vehicle["access_level"]))
+            registration_number = vehicle.registration_number
+            access_level = AccessLevel(vehicle.access_level).name  # Convert access level to name
+            owner = vehicle.owner  # Assume OWNER is in your CSV structure
+            self.vehicleTable.setItem(row, 0, QTableWidgetItem(registration_number))
+            self.vehicleTable.setItem(row, 1, QTableWidgetItem(access_level))
+            self.vehicleTable.setItem(row, 2, QTableWidgetItem(owner))

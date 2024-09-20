@@ -14,7 +14,7 @@ class LoginValidator:
         """
         try:
             # Read credentials from the CSV file
-            with open('credentials.csv', 'r', encoding='utf-8') as file:
+            with open('../database/users.csv', 'r', encoding='utf-8') as file:
                 reader = csv.reader(file)
 
                 # Skip the header row if it exists
@@ -26,7 +26,7 @@ class LoginValidator:
                         return True
                 return False  # No match found
         except FileNotFoundError:
-            print("Error: The 'credentials.csv' file was not found.")
+            print("Error: The 'users.csv' file was not found.")
             return False
         except Exception as e:
             print(f"An error occurred: {e}")

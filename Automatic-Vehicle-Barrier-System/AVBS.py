@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QApplication
 from API.BarrierControl import BarrierControl
 from API.Database import Database
 from API.LicensePlateRecognizer import LicensePlateRecognizer
+from API.SingletonDatabase import SingletonDatabase
 from API.VehicleDetection import VehicleDetection
 from AVBSWindow.AVBSWindow import AVBSWindow
 from config.SystemSetting import SystemSetting
@@ -40,10 +41,10 @@ class AVBS:
         self.license_plate_recognizer = LicensePlateRecognizer(self.license_plate_detector, self.license_plate_reader)
 
         # Access control setup
-        self.database = Database("database/access_events_logs.csv")
+        # self.database = Database("database/access_events_logs.csv")
         if self.enforce_access_control:
             working_hours = f"{self.system_settings[SystemSetting.WORKDAY_START_TIME.value]}-{self.system_settings[SystemSetting.WORKDAY_END_TIME.value]}"
-            self.access_control = AccessControl(self.database, working_hours)
+            self.access_control = AccessControl( working_hours)
 
         self.barrier = Barrier()
         self.barrier_control = BarrierControl(self.barrier)
@@ -92,7 +93,7 @@ class AVBS:
                             self.barrier_control.deny_access()
                             event = AccessEvent(AccessEventType.DENIED, datetime.now(), license_plate, direction)
 
-                        self.database.log_event(event)
+                        SingletonDatabase().getInstance().log_event(event)
                         self.ui.update_info_panel(event, vehicle_detected_region, len(self.vehicles_on_premises))
                 else:
                     if self.barrier_control.get_status():

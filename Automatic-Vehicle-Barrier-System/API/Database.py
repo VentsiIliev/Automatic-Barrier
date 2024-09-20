@@ -1,17 +1,22 @@
+import os
+
 from model.access_events.AccessEventType import AccessEventType
 from repositories.csv_repositories.CSVAccessDeniedRepository import CSVAccessDeniedRepository
 from repositories.csv_repositories.CSVAccessGrantedRepository import CSVAccessGrantedRepository
 from repositories.csv_repositories.CSVVehiclesOnPremisesRepository import CSVVehiclesOnPremisesRepository
 from repositories.csv_repositories.CSVWhitelistedVehiclesRepository import CSVWhitelistedVehiclesRepository
-
+from repositories.csv_repositories.CSVUsersRepository import CSVUsersRepository
 
 class Database:
     def __init__(self, db_name):
         self.db_name = db_name
-        self.access_denied_repo = CSVAccessDeniedRepository("database/access_denied.csv")
-        self.access_granted_repo = CSVAccessGrantedRepository("database/access_granted.csv")
-        self.vehicles_on_premises_repo = CSVVehiclesOnPremisesRepository("database/vehicles_on_premises.csv")
-        self.whitelisted_vehicles_repo = CSVWhitelistedVehiclesRepository("database/whitelisted_vehicles.csv")
+        self.access_denied_repo = CSVAccessDeniedRepository(os.path.join("database\\access_denied.csv"))
+        self.access_granted_repo = CSVAccessGrantedRepository(os.path.join("database\\access_granted.csv"))
+        self.vehicles_on_premises_repo = CSVVehiclesOnPremisesRepository(os.path.join("database"
+                                                                                                "\\vehicles_on_premises.csv"))
+        self.whitelisted_vehicles_repo = CSVWhitelistedVehiclesRepository(os.path.join( "database"
+                                                                                                 "\\whitelisted_vehicles.csv"))
+        self.users_repo = CSVUsersRepository(os.path.join("database\\users.csv"))
 
     def get_repo(self, repo):
         """Return the repository object for the specified repository."""
@@ -23,6 +28,8 @@ class Database:
             return self.vehicles_on_premises_repo
         elif repo == 'whitelisted':
             return self.whitelisted_vehicles_repo
+        elif repo == 'users':
+            return self.users_repo
         else:
             raise ValueError("Invalid repository specified.")
 

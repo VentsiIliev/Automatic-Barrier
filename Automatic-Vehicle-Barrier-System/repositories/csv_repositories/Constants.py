@@ -9,6 +9,10 @@ REGISTRATION_NUMBER = 'Registration Number'
 DIRECTION = 'Direction'
 OWNER = 'Owner'
 ACCESS_LEVEL = 'Access Level'
+USER = 'User'
+PASSWORD = 'Password'
+EMAIL = 'Email'
+ROLE = 'Role'
 
 # Access Denied Repository Fields
 ACCESS_DENIED_FIELDS = [EVENT_TYPE, DATE, TIME, REGISTRATION_NUMBER, DIRECTION, OWNER]
@@ -21,3 +25,6 @@ VEHICLES_ON_PREMISES_FIELDS = [REGISTRATION_NUMBER]
 
 # Whitelisted Vehicles Repository Fields
 WHITELISTED_VEHICLES_FIELDS = [REGISTRATION_NUMBER, OWNER, ACCESS_LEVEL]
+
+# User Repository Fields
+USER_FIELDS = [USER, PASSWORD, EMAIL, ROLE]
