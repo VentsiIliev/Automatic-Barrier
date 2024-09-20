@@ -1,13 +1,15 @@
 import csv
 from datetime import datetime
 
+from API.Database import Database
 from model.access_events.AccessLevel import AccessLevel
 
 
 class AccessControl:
-    def __init__(self, csv_file: str, working_hours: str):
+    def __init__(self, database: Database, working_hours: str):
         # Load whitelisted vehicles and their access levels from the CSV file
-        self.whitelisted_vehicles = self.load_whitelisted_vehicles(csv_file)
+        # self.whitelisted_vehicles = self.load_whitelisted_vehicles(csv_file)
+        self.database = database
         self.working_hours = working_hours
 
     def load_whitelisted_vehicles(self, csv_file):
@@ -46,11 +48,16 @@ class AccessControl:
 
     def check_access(self, registration_number):
         """Check if the registration number and access level are in the whitelist."""
-        if registration_number not in self.whitelisted_vehicles:
+        vehicles = self.database.get_repo('whitelisted').get_all()
+        vechicle = None
+        for entry in vehicles:
+            if entry.registration_number == registration_number:
+                vechicle = entry
+        if not vechicle:
             print(f"Vehicle with registration number '{registration_number}' is not whitelisted.")
             return False
 
-        vehicle_access_level = self.whitelisted_vehicles.get(registration_number)
+        vehicle_access_level = vechicle.access_level
         print(f"Vehicle with registration number '{registration_number}' has access level '{vehicle_access_level}'.")
 
         if vehicle_access_level == AccessLevel.UNLIMITED:

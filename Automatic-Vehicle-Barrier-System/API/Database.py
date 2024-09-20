@@ -1,70 +1,94 @@
-import os
-
 from model.access_events.AccessEventType import AccessEventType
+from repositories.csv_repositories.CSVAccessDeniedRepository import CSVAccessDeniedRepository
+from repositories.csv_repositories.CSVAccessGrantedRepository import CSVAccessGrantedRepository
+from repositories.csv_repositories.CSVVehiclesOnPremisesRepository import CSVVehiclesOnPremisesRepository
+from repositories.csv_repositories.CSVWhitelistedVehiclesRepository import CSVWhitelistedVehiclesRepository
 
 
 class Database:
     def __init__(self, db_name):
         self.db_name = db_name
-        self.access_denied_table = "database/access_denied.csv"
-        self.access_granted_table = "database/access_granted.csv"
+        self.access_denied_repo = CSVAccessDeniedRepository("database/access_denied.csv")
+        self.access_granted_repo = CSVAccessGrantedRepository("database/access_granted.csv")
+        self.vehicles_on_premises_repo = CSVVehiclesOnPremisesRepository("database/vehicles_on_premises.csv")
+        self.whitelisted_vehicles_repo = CSVWhitelistedVehiclesRepository("database/whitelisted_vehicles.csv")
 
-    def get_data(self, query):
-        # Connect to the database and get the data
-        pass
+    def get_repo(self, repo):
+        """Return the repository object for the specified repository."""
+        if repo == 'granted':
+            return self.access_granted_repo
+        elif repo == 'denied':
+            return self.access_denied_repo
+        elif repo == 'vehicles':
+            return self.vehicles_on_premises_repo
+        elif repo == 'whitelisted':
+            return self.whitelisted_vehicles_repo
+        else:
+            raise ValueError("Invalid repository specified.")
 
-    def insert_data(self, query):
-        # Connect to the database and insert the data
-        pass
+    def get_data(self, query, repo):
+        """Retrieve data from the specified repository."""
+        if repo == 'granted':
+            return self.access_granted_repo.get(query)
+        elif repo == 'denied':
+            return self.access_denied_repo.get(query)
+        elif repo == 'vehicles':
+            return self.vehicles_on_premises_repo.get_all()
+        elif repo == 'whitelisted':
+            return self.whitelisted_vehicles_repo.get(query)
+        else:
+            raise ValueError("Invalid repository specified.")
 
-    def delete_data(self, query):
-        # Connect to the database and delete the data
-        pass
+    def insert_data(self, repo, **kwargs):
+        """Insert data into the specified repository."""
+        if repo == 'granted':
+            self.access_granted_repo.insert(**kwargs)
+        elif repo == 'denied':
+            self.access_denied_repo.insert(**kwargs)
+        elif repo == 'vehicles':
+            self.vehicles_on_premises_repo.insert(**kwargs)
+        elif repo == 'whitelisted':
+            self.whitelisted_vehicles_repo.insert(**kwargs)
+        else:
+            raise ValueError("Invalid repository specified.")
 
-    def update_data(self, query):
-        # Connect to the database and update the data
-        pass
+    def delete_data(self, repo, query):
+        """Delete data from the specified repository."""
+        if repo == 'granted':
+            self.access_granted_repo.delete(query)
+        elif repo == 'denied':
+            self.access_denied_repo.delete(query)
+        elif repo == 'vehicles':
+            self.vehicles_on_premises_repo.delete(query)
+        elif repo == 'whitelisted':
+            self.whitelisted_vehicles_repo.delete(query)
+        else:
+            raise ValueError("Invalid repository specified.")
 
-    def log_access_granted(self, event):
-        # Prepare the string for the CSV row
-        event_type = event.type.value
-        event_time = event.time.strftime('%Y-%m-%d %H:%M:%S')  # Format datetime for CSV
-        registration_number = event.registration_number
-        direction = event.direction
-        row = f"{event_type},{event_time},{registration_number},{direction}\n"
-
-        # Check if the file exists and create it with the header if necessary
-        if not os.path.exists(self.access_granted_table):
-            with open(self.access_granted_table, 'w') as f:
-                # Write the header
-                f.write("Event Type,Date Time,Registration Number\n")
-
-        # Append the event details to the file
-        with open(self.access_granted_table, 'a') as f:
-            f.write(row)
-
-    def log_access_denied(self, event):
-        # Prepare the string for the CSV row
-        event_type = event.type.value
-        event_time = event.time.strftime('%Y-%m-%d %H:%M:%S')  # Format datetime for CSV
-        registration_number = event.registration_number
-        direction = event.direction
-        row = f"{event_type},{event_time},{registration_number},{direction}\n"
-
-        # Check if the file exists and create it with the header if necessary
-        if not os.path.exists(self.access_denied_table):
-            with open(self.access_denied_table, 'w') as f:
-                # Write the header
-                f.write("Event Type,Date Time,Registration Number\n")
-
-        # Append the event details to the file
-        with open(self.access_denied_table, 'a') as f:
-            f.write(row)
+    def update_data(self, repo, query, **kwargs):
+        """Update data in the specified repository. This method can be customized as needed."""
+        # You might want to implement update logic here if necessary
+        raise NotImplementedError("Update operation is not implemented yet.")
 
     def log_event(self, event):
+        """Log the event to the appropriate repository."""
         if event.type == AccessEventType.GRANTED:
-            self.log_access_granted(event)
+            self.access_granted_repo.insert(
+                event_type=event.type.value,
+                date=event.time.strftime('%Y-%m-%d'),
+                time=event.time.strftime('%H:%M:%S'),
+                registration_number=event.registration_number,
+                direction=event.direction,
+                owner=event.owner  # Assuming the event has an owner attribute
+            )
         elif event.type == AccessEventType.DENIED:
-            self.log_access_denied(event)
+            self.access_denied_repo.insert(
+                event_type=event.type.value,
+                date=event.time.strftime('%Y-%m-%d'),
+                time=event.time.strftime('%H:%M:%S'),
+                registration_number=event.registration_number,
+                direction=event.direction,
+                owner=event.owner  # Assuming the event has an owner attribute
+            )
         else:
             raise ValueError("Invalid event type")

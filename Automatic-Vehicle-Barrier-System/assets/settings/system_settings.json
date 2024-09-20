@@ -1,5 +1,5 @@
 {
-    "enforce access control": "False",
+    "enforce access control": "True",
     "working hours": "08:00-17:00",
     "workday start time": "08:00",
     "workday end time": "17:00"
