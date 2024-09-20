@@ -1,3 +1,6 @@
 User,Password,Email,Role
-b,b,N/A,N/A
-c,c,N/A,N/A
+a,a,a,Manager
+n,a,a,Manager
+h,h,h,Admin
+j,j,j,Manager
+a,a,a,Manager

@@ -1,97 +1,79 @@
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QTableWidget,
-    QTableWidgetItem, QMessageBox
-)
+from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem
 from API.SingletonDatabase import SingletonDatabase
+from control_panel import Validations
+from control_panel.BaseLayout import BaseLayout
 from model.User import User
 
 
-class UserManagementLayout(QWidget):
+class UserManagementLayout(BaseLayout):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__("User Management", parent)
         self.initUI()
 
     def initUI(self):
-        layout = QVBoxLayout()
+        """Initialize the user management layout."""
 
-        # Title
-        titleLabel = QLabel("User Management", self)
-        titleLabel.setStyleSheet("font-size: 24px; font-weight: bold;")
-        layout.addWidget(titleLabel)
+        # Add User Table
+        self.addTable(4, ["Username", "Password", "Role", "Email"])
 
-        # User Input Fields
-        self.usernameInput = QLineEdit(self)
-        self.usernameInput.setPlaceholderText("Username")
-        layout.addWidget(self.usernameInput)
+        # Add input fields
+        self.usernameInput = self.addInputField("Username")
+        self.passwordInput = self.addInputField("Password")
+        self.roleInput = self.addComboBox(["Select Role", "Manager", "Admin"])
+        self.emailInput = self.addInputField("Email")
 
-        self.passwordInput = QLineEdit(self)
-        self.passwordInput.setPlaceholderText("Password")
-        self.passwordInput.setEchoMode(QLineEdit.Password)
-        layout.addWidget(self.passwordInput)
-
-        # Buttons for Add, Update, Remove, Search
-        buttonLayout = QVBoxLayout()
-
-        addUserButton = QPushButton("Add User", self)
-        addUserButton.clicked.connect(self.addUser)
-        buttonLayout.addWidget(addUserButton)
-
-        updateUserButton = QPushButton("Update User", self)
-        updateUserButton.clicked.connect(self.updateUser)
-        buttonLayout.addWidget(updateUserButton)
-
-        removeUserButton = QPushButton("Remove User", self)
-        removeUserButton.clicked.connect(self.removeUser)
-        buttonLayout.addWidget(removeUserButton)
-
-        searchUserButton = QPushButton("Search User", self)
-        searchUserButton.clicked.connect(self.searchUser)
-        buttonLayout.addWidget(searchUserButton)
-
-        layout.addLayout(buttonLayout)
-
-        # User Table
-        self.userTable = QTableWidget(self)
-        self.userTable.setColumnCount(2)
-        self.userTable.setHorizontalHeaderLabels(["Username", "Password"])
-        self.userTable.cellDoubleClicked.connect(self.loadUserData)  # Load user data on double click
-        layout.addWidget(self.userTable)
+        # Add Buttons
+        self.addButton("Add User", self.addUser)
+        self.addButton("Update User", self.updateUser)
+        self.addButton("Remove User", self.removeUser)
+        self.addButton("Search User", self.searchUser)
 
         self.loadUsersTable()
 
-        self.setLayout(layout)
-
     def loadUsersTable(self):
         """Load existing users from the database and populate the user table."""
-        self.userTable.setRowCount(0)  # Clear existing rows
+        self.table.setRowCount(0)
         users = SingletonDatabase().getInstance().get_repo('users').get_all()
+
         for user in users:
-            rowPosition = self.userTable.rowCount()
-            self.userTable.insertRow(rowPosition)
-            self.userTable.setItem(rowPosition, 0, QTableWidgetItem(user.username))
-            self.userTable.setItem(rowPosition, 1, QTableWidgetItem(user.password))  # Avoid showing passwords in production
+            rowPosition = self.table.rowCount()
+            self.table.insertRow(rowPosition)
+            self.table.setItem(rowPosition, 0, QTableWidgetItem(user.username))
+            self.table.setItem(rowPosition, 1, QTableWidgetItem(user.password))
+            self.table.setItem(rowPosition, 2, QTableWidgetItem(user.role))
+            self.table.setItem(rowPosition, 3, QTableWidgetItem(user.email))
 
     def addUser(self):
+
+        # username, password, role, email = self.validateFields()
         username = self.usernameInput.text()
         password = self.passwordInput.text()
+        role = self.roleInput.currentText()  # Get selected role
+        email = self.emailInput.text()
 
-        if username and password:
-            user = User(username, password, "N/A", "N/A")
-            users = SingletonDatabase().getInstance().get_repo('users').get_all()
+        if not Validations.validate_email(email):
+            QMessageBox.warning(self, "Input Error", "Please enter your email.")
+            return
+        if not Validations.validate_role(role):
+            QMessageBox.warning(self, "Input Error", "Please select a role.")
+            return
 
-            if any(u.username == username for u in users):
-                QMessageBox.warning(self, "Input Error", "Username already exists.")
-                return
+        if not username or not password or not role or not email:
+            QMessageBox.warning(self, "Input Error", "Please enter all fields.")
 
-            db = SingletonDatabase().getInstance()
-            repo = db.get_repo('users')
-            repo.insert(user)
+        user = User(username, password, email, role, )  # Assume User has a role parameter
+        users = SingletonDatabase().getInstance().get_repo('users').get_all()
 
-            self.loadUsersTable()  # Reload the user table
-            self.usernameInput.clear()
-            self.passwordInput.clear()
-        else:
-            QMessageBox.warning(self, "Input Error", "Please enter both username and password.")
+        if any(u.username == username for u in users):
+            QMessageBox.warning(self, "Input Error", "Username already exists.")
+            return
+
+        db = SingletonDatabase().getInstance()
+        repo = db.get_repo('users')
+        repo.insert(user)
+
+        self.loadUsersTable()  # Reload the user table
+        self.clearInputs()
 
     def updateUser(self):
         selected_row = self.userTable.currentRow()
@@ -99,20 +81,29 @@ class UserManagementLayout(QWidget):
             QMessageBox.warning(self, "Selection Error", "Please select a user to update.")
             return
 
+        # username, password, role, email = self.validateFields()
         username = self.usernameInput.text()
         password = self.passwordInput.text()
+        role = self.roleInput.currentText()  # Get selected role
+        email = self.emailInput.text()
 
-        if username and password:
-            user = User(username, password, "N/A", "N/A")
-            db = SingletonDatabase().getInstance()
-            repo = db.get_repo('users')
-            repo.update(user)  # Assume the update method exists
+        if not Validations.validate_email(email):
+            QMessageBox.warning(self, "Input Error", "Please enter your email.")
+            return
+        if not Validations.validate_role(role):
+            QMessageBox.warning(self, "Input Error", "Please select a role.")
+            return
 
-            self.loadUsersTable()  # Reload the user table
-            self.usernameInput.clear()
-            self.passwordInput.clear()
-        else:
-            QMessageBox.warning(self, "Input Error", "Please enter both username and password.")
+        if not username or not password or not role or not email:
+            QMessageBox.warning(self, "Input Error", "Please enter all fields.")
+
+        user = User(username, password, email, role)  # Assume User has a role parameter
+        db = SingletonDatabase().getInstance()
+        repo = db.get_repo('users')
+        # repo.update(user)  # Assume the update method exists
+        repo.update(username, password, email, role)
+        self.loadUsersTable()  # Reload the user table
+        self.clearInputs()
 
     def removeUser(self):
         selected_row = self.userTable.currentRow()
@@ -138,13 +129,15 @@ class UserManagementLayout(QWidget):
                     rowPosition = self.userTable.rowCount()
                     self.userTable.insertRow(rowPosition)
                     self.userTable.setItem(rowPosition, 0, QTableWidgetItem(user.username))
-                    self.userTable.setItem(rowPosition, 1, QTableWidgetItem(user.password))  # Avoid showing passwords in production
+                    self.userTable.setItem(rowPosition, 1,
+                                           QTableWidgetItem(user.password))  # Avoid showing passwords in production
+                    self.userTable.setItem(rowPosition, 2,
+                                           QTableWidgetItem(user.role))  # Assuming user has a role attribute
         else:
             QMessageBox.warning(self, "Input Error", "Please enter a username to search.")
-
-    def loadUserData(self, row, column):
-        """Load user data into input fields for editing."""
-        username = self.userTable.item(row, 0).text()
-        password = self.userTable.item(row, 1).text()
-        self.usernameInput.setText(username)
-        self.passwordInput.setText(password)
+    def clearInputs(self):
+        """Clear input fields."""
+        self.usernameInput.clear()
+        self.passwordInput.clear()
+        self.emailInput.clear()
+        self.roleInput.setCurrentIndex(0)

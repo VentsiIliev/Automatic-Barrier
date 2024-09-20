@@ -24,7 +24,7 @@ class ControlPanel(QMainWindow):
         self.setGeometry(100, 100, 1200, 800)  # Main window size
 
         # Check for login at the start
-        self.check_login()
+        # self.check_login()
 
         # Main container widget
         self.centralWidget = QWidget()

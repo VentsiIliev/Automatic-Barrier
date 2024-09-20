@@ -6,72 +6,31 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWi
 import pandas as pd
 
 from control_panel import Constants
+from control_panel.BaseLayout import BaseLayout
 from control_panel.enums.AccessEventType import AccessEventType
 
 
-class ReportsLayout(QWidget):
+class ReportsLayout(BaseLayout):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__("Reports",parent)
         self.initUI()
 
     def initUI(self):
         """Initialize the reports layout."""
-        layout = QVBoxLayout()
 
-        # Reports Title
-        titleLabel = QLabel("Reports", self)
-        titleLabel.setStyleSheet("font-size: 24px; font-weight: bold;")
-        layout.addWidget(titleLabel)
+        # Add input fields (filters)
+        self.registrationInput = self.addInputField("Registration Number")
+        self.dateInput = self.addInputField("Date")
+        self.timeInput = self.addInputField("Time")
+        self.directionInput = self.addComboBox(["", "IN", "OUT"])
+        self.accessLevelInput = self.addComboBox(["", "Admin", "User", "Guest"])
+        self.accessStatusInput = self.addComboBox(["", "GRANTED", "DENIED"])
 
-        # Filters Section
-        filterLayout = QVBoxLayout()
+        # Add Generate Report Button
+        self.addButton("Generate Report", self.generateReport)
 
-        # Registration Number Filter
-        self.registrationInput = QLineEdit(self)
-        self.registrationInput.setPlaceholderText("Registration Number")
-        filterLayout.addWidget(self.registrationInput)
-
-        # Date Filter
-        self.dateInput = QDateEdit(self)
-        self.dateInput.setDate(QDate.currentDate())
-        filterLayout.addWidget(self.dateInput)
-
-        # Time Filter
-        self.timeInput = QTimeEdit(self)
-        self.timeInput.setTime(QTime.currentTime())
-        filterLayout.addWidget(self.timeInput)
-
-        # Direction Filter
-        self.directionInput = QComboBox(self)
-        self.directionInput.addItems(["", "IN", "OUT"])
-        filterLayout.addWidget(self.directionInput)
-
-        # Access Level Filter
-        self.accessLevelInput = QComboBox(self)
-        self.accessLevelInput.addItems(["", "Admin", "User", "Guest"])
-        filterLayout.addWidget(self.accessLevelInput)
-
-        # Access Status Filter
-        self.accessStatusInput = QComboBox(self)
-        self.accessStatusInput.addItems(["", "GRANTED", "DENIED"])
-        filterLayout.addWidget(self.accessStatusInput)
-
-        # Generate Report Button
-        generateReportButton = QPushButton("Generate Report", self)
-        generateReportButton.clicked.connect(self.generateReport)
-        filterLayout.addWidget(generateReportButton)
-
-        layout.addLayout(filterLayout)
-
-        # Reports Table
-        self.reportTable = QTableWidget()
-        self.reportTable.setColumnCount(6)
-        self.reportTable.setHorizontalHeaderLabels(
-            ["Registration", "Date", "Time", "Direction", "Access Level", "Access Status"]
-        )
-        layout.addWidget(self.reportTable)
-
-        self.setLayout(layout)
+        # Add Report Table
+        self.addTable(6, ["Registration", "Date", "Time", "Direction", "Access Level", "Access Status"])
 
     def generateReport(self):
         try:
@@ -124,14 +83,14 @@ class ReportsLayout(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
 
-    def populateReportTable(self, data):
-        """Populate the report table with the filtered data."""
-        self.reportTable.setRowCount(len(data))
-
-        for row in range(len(data)):
-            self.reportTable.setItem(row, 0, QTableWidgetItem(data.iloc[row]['Registration Number']))
-            self.reportTable.setItem(row, 1, QTableWidgetItem(data.iloc[row]['Date']))
-            self.reportTable.setItem(row, 2, QTableWidgetItem(data.iloc[row]['Time']))
-            self.reportTable.setItem(row, 3, QTableWidgetItem(data.iloc[row]['Direction']))
-            self.reportTable.setItem(row, 4, QTableWidgetItem(data.iloc[row]['Event Type']))  # Assuming 'Event Type' contains Access Level
-            # self.reportTable.setItem(row, 5, QTableWidgetItem(data.iloc[row]['Access Status']))  # Adjusted based on file structure
+    # def populateReportTable(self, data):
+    #     """Populate the report table with the filtered data."""
+    #     self.reportTable.setRowCount(len(data))
+    #
+    #     for row in range(len(data)):
+    #         self.reportTable.setItem(row, 0, QTableWidgetItem(data.iloc[row]['Registration Number']))
+    #         self.reportTable.setItem(row, 1, QTableWidgetItem(data.iloc[row]['Date']))
+    #         self.reportTable.setItem(row, 2, QTableWidgetItem(data.iloc[row]['Time']))
+    #         self.reportTable.setItem(row, 3, QTableWidgetItem(data.iloc[row]['Direction']))
+    #         self.reportTable.setItem(row, 4, QTableWidgetItem(data.iloc[row]['Event Type']))  # Assuming 'Event Type' contains Access Level
+    #         # self.reportTable.setItem(row, 5, QTableWidgetItem(data.iloc[row]['Access Status']))  # Adjusted based on file structure
