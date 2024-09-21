@@ -9,35 +9,64 @@ class CSVUsersRepository(BaseCSVRepository):
 
     def get_all(self):
         users = []
-        rows = self._read_rows()
-        for row in rows:
-            # users.append(row)
-            user = User(row[USER], row[PASSWORD], row[EMAIL], row[ROLE])
+        df = self._read_rows()
+
+        if df.empty:
+            print("No users found in the CSV.")
+            return users
+
+        for _, row in df.iterrows():
+            # Access row data using the column names directly
+            user = User(
+                username=row[USER],
+                password=row[PASSWORD],
+                email=row[EMAIL],
+                role=row[ROLE]
+            )
             users.append(user)
+
         return users
 
     def get(self, username):
-        user = None
         for row in self._read_rows():
             if row[USER] == username:
-                user = row
-                break
-        return user
+                return row
+        return None
 
     def insert(self, user):
-        print("inserting user")
-        if self.get(user) is None:
+        print("Inserting user")
+        if self.get(user.username) is None:  # Check by username
             super().insert(**{USER: user.username, PASSWORD: user.password, EMAIL: user.email, ROLE: user.role})
 
     def delete(self, username):
         super().delete(username)
 
-    def update(self, username, password, email, role):
-        rows = self._read_rows()
-        for row in rows:
-            if row[self.fieldnames[0]] == username:
-                row[self.fieldnames[0]] = username
-                row[self.fieldnames[1]] = password
-                row[self.fieldnames[2]] = email
-                row[self.fieldnames[3]] = role
-        super().update(rows)
+    def update(self, rows):
+        """Update users with the provided list of user data."""
+        print("Updating users")
+        current_rows = self._read_rows()
+        for row in current_rows:
+            for updated_user in rows:
+                if row[USER] == updated_user[USER]:  # Ensure matching on username
+                    row[PASSWORD] = updated_user[PASSWORD]
+                    row[EMAIL] = updated_user[EMAIL]
+                    row[ROLE] = updated_user[ROLE]
+        super().update(current_rows)
+
+    def get_data(self, filters=None):
+        users = []
+        data = super().get_data(filters)
+
+        # Skip the first row (header) using .iloc
+        for index, row in data.iloc[1:].iterrows():  # Start from the second row
+            print("row", row)
+            user = User(
+                username=row[USER],
+                password=row[PASSWORD],
+                email=row[EMAIL],
+                role=row[ROLE]
+            )
+            users.append(user)
+
+        return users
+

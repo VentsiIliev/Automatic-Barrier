@@ -1,8 +1,6 @@
 from model.Vehicle import Vehicle
-from model.access_events.AccessEvent import AccessEvent
 from model.access_events.AccessLevel import AccessLevel
-from repositories.csv_repositories.Constants import WHITELISTED_VEHICLES_FIELDS, REGISTRATION_NUMBER, OWNER, \
-    ACCESS_LEVEL, EVENT_TYPE, DATE, TIME, DIRECTION
+from repositories.csv_repositories.Constants import WHITELISTED_VEHICLES_FIELDS, REGISTRATION_NUMBER, OWNER, ACCESS_LEVEL
 from repositories.csv_repositories.BaseCSVRepository import BaseCSVRepository
 
 
@@ -11,41 +9,36 @@ class CSVWhitelistedVehiclesRepository(BaseCSVRepository):
         super().__init__(file_path, WHITELISTED_VEHICLES_FIELDS)
 
     def get_all(self):
-        vehicles = []
-        rows = self._read_rows()
-        for row in rows:
-            # Create an event from the row
-            registration_number = row[REGISTRATION_NUMBER]
-            owner = row[OWNER]
-            access_level = AccessLevel(int(row[ACCESS_LEVEL]))
-            vehicle = Vehicle(registration_number, owner, access_level)
-            # Append the event to the events list
-            vehicles.append(vehicle)
+        df = self._read_rows()
+        vehicles = [
+            Vehicle(row[REGISTRATION_NUMBER], row[OWNER], AccessLevel(int(row[ACCESS_LEVEL])))
+            for _, row in df.iterrows()
+        ]
         return vehicles
 
     def get(self, license_plate):
-        vehicle = None
-        for row in self._read_rows():
-            if row[REGISTRATION_NUMBER] == license_plate:
-                vehicle = Vehicle(row[REGISTRATION_NUMBER], row[OWNER], AccessLevel(int(row[ACCESS_LEVEL])))
-                break
-        return vehicle
+        df = self._read_rows()
+        row = df[df[REGISTRATION_NUMBER] == license_plate]
+        if not row.empty:
+            return Vehicle(row[REGISTRATION_NUMBER].values[0], row[OWNER].values[0], AccessLevel(int(row[ACCESS_LEVEL].values[0])))
+        return None
 
     def insert(self, vehicle):
-        print("inserting vehicle")
-        if self.get(vehicle) is None:
-            super().insert(**{REGISTRATION_NUMBER: vehicle.registration_number, OWNER: vehicle.owner,
-                              ACCESS_LEVEL: vehicle.access_level})
+        print("Inserting vehicle")
+        if self.get(vehicle.registration_number) is None:
+            super().insert(
+                **{
+                    REGISTRATION_NUMBER: vehicle.registration_number,
+                    OWNER: vehicle.owner,
+                    ACCESS_LEVEL: vehicle.access_level
+                }
+            )
 
     def delete(self, registration_number):
         super().delete(registration_number)
 
-    def update(self, registration_number, owner, access_level):
+    def update(self, vehicle: Vehicle):
         print("Updating")
-        rows = self._read_rows()
-        for row in rows:
-            if row[self.fieldnames[0]] == registration_number:
-                row[self.fieldnames[0]] = registration_number
-                row[self.fieldnames[1]] = owner
-                row[self.fieldnames[2]] = access_level
-        super().update(rows)
+        df = self._read_rows()
+        df.loc[df[REGISTRATION_NUMBER] == vehicle.registration_number, [OWNER, ACCESS_LEVEL]] = vehicle.owner, vehicle.access_level
+        self._write_rows(df)

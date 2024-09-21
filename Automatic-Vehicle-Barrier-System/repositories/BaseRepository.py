@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-
 class BaseRepository(ABC):
     @abstractmethod
     def get(self, query):
@@ -11,5 +10,5 @@ class BaseRepository(ABC):
         pass
 
     @abstractmethod
-    def delete(self, query, params):
-        pass
+    def delete(self, query):
+        pass  # Ensure this matches your intended parameter structure

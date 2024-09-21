@@ -7,15 +7,16 @@ from repositories.csv_repositories.CSVVehiclesOnPremisesRepository import CSVVeh
 from repositories.csv_repositories.CSVWhitelistedVehiclesRepository import CSVWhitelistedVehiclesRepository
 from repositories.csv_repositories.CSVUsersRepository import CSVUsersRepository
 
+
 class Database:
     def __init__(self, db_name):
         self.db_name = db_name
         self.access_denied_repo = CSVAccessDeniedRepository(os.path.join("database\\access_denied.csv"))
         self.access_granted_repo = CSVAccessGrantedRepository(os.path.join("database\\access_granted.csv"))
         self.vehicles_on_premises_repo = CSVVehiclesOnPremisesRepository(os.path.join("database"
-                                                                                                "\\vehicles_on_premises.csv"))
-        self.whitelisted_vehicles_repo = CSVWhitelistedVehiclesRepository(os.path.join( "database"
-                                                                                                 "\\whitelisted_vehicles.csv"))
+                                                                                      "\\vehicles_on_premises.csv"))
+        self.whitelisted_vehicles_repo = CSVWhitelistedVehiclesRepository(os.path.join("database"
+                                                                                       "\\whitelisted_vehicles.csv"))
         self.users_repo = CSVUsersRepository(os.path.join("database\\users.csv"))
 
     def get_repo(self, repo):
@@ -33,16 +34,29 @@ class Database:
         else:
             raise ValueError("Invalid repository specified.")
 
-    def get_data(self, query, repo):
+    # def get_data(self, query, repo):
+    #     """Retrieve data from the specified repository."""
+    #     if repo == 'granted':
+    #         return self.access_granted_repo.get(query)
+    #     elif repo == 'denied':
+    #         return self.access_denied_repo.get(query)
+    #     elif repo == 'vehicles':
+    #         return self.vehicles_on_premises_repo.get_all()
+    #     elif repo == 'whitelisted':
+    #         return self.whitelisted_vehicles_repo.get(query)
+    #     else:
+    #         raise ValueError("Invalid repository specified.")
+
+    def get_data(self, repo, filters=None):
         """Retrieve data from the specified repository."""
         if repo == 'granted':
-            return self.access_granted_repo.get(query)
+            return self.access_granted_repo.get(filters)
         elif repo == 'denied':
-            return self.access_denied_repo.get(query)
+            return self.access_denied_repo.get(filters)
         elif repo == 'vehicles':
             return self.vehicles_on_premises_repo.get_all()
         elif repo == 'whitelisted':
-            return self.whitelisted_vehicles_repo.get(query)
+            return self.whitelisted_vehicles_repo.get(filters)
         else:
             raise ValueError("Invalid repository specified.")
 

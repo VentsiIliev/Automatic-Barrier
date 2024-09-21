@@ -1,10 +1,11 @@
-from pathlib import Path
-import pandas as pd
+import traceback
 from PyQt5.QtWidgets import QTableWidgetItem, QMessageBox, QTimeEdit
 from PyQt5.QtCore import QTime
-from control_panel import Constants
+
 from control_panel.BaseLayout import BaseLayout
-from control_panel.enums.AccessEventType import AccessEventType
+from control_panel.data_managment.Filter import Filter
+from control_panel.data_managment.ReportGenerator import ReportsGenerator
+from repositories.csv_repositories.Constants import DATE, TIME, REGISTRATION_NUMBER, DIRECTION
 
 
 class ReportsLayout(BaseLayout):
@@ -18,7 +19,7 @@ class ReportsLayout(BaseLayout):
         self.registrationInput = self.addInputField("Registration Number")
         self.dateInput = self.addDateField("Date")  # Changed to Date Edit field
         self.timeFromInput = self.addTimeField("From Time")  # "From" time field
-        self.timeToInput = self.addTimeField("To Time")      # "To" time field
+        self.timeToInput = self.addTimeField("To Time")  # "To" time field
         self.directionInput = self.addComboBox(["All", "IN", "OUT"])
         self.accessLevelInput = self.addComboBox(["All", "Admin", "User", "Guest"])
         self.accessStatusInput = self.addComboBox(["All", "GRANTED", "DENIED"])
@@ -37,69 +38,37 @@ class ReportsLayout(BaseLayout):
         self.layout.addWidget(time_field)
         return time_field
 
+    def create_filters(self):
+        """Gather filter input from the UI and return a dictionary."""
+        filters = Filter(
+            registration_number=self.registrationInput.text().upper() or None,
+            date_range=(self.dateInput.date().toString("yyyy-MM-dd"),) if self.dateInput.date() else None,
+            time_range=(self.timeFromInput.time().toString("hh:mm:ss"), self.timeToInput.time().toString("hh:mm:ss"))
+            if self.timeFromInput.time() and self.timeToInput.time() else None,
+            direction=self.directionInput.currentText() if self.directionInput.currentText() != "All" else None,
+            access_status=self.accessStatusInput.currentText() if self.accessStatusInput.currentText() != "All" else None
+        )
+        return filters
+
     def generateReport(self):
         try:
-            reg = self.registrationInput.text().upper()
-            date_input = self.dateInput.date().toString("yyyy-MM-dd")
-            time_from_input = self.timeFromInput.time().toString("hh:mm:ss")
-            time_to_input = self.timeToInput.time().toString("hh:mm:ss")
-            direction = self.directionInput.currentText()
-            access_status = self.accessStatusInput.currentText()
-
-            # Prepare file paths
-            base_directory = Path(__file__).resolve().parent.parent  # Go up two levels
-            database_directory = base_directory / 'database'
-
-            access_granted_path = database_directory / Constants.ACCESS_GRANTED_TABLE
-            access_denied_path = database_directory / Constants.ACCESS_DENIED_TABLE
-
-            # Check if files exist
-            if not access_granted_path.exists():
-                QMessageBox.warning(self, "File Not Found", f"File not found: {access_granted_path}")
-                return
-            if not access_denied_path.exists():
-                QMessageBox.warning(self, "File Not Found", f"File not found: {access_denied_path}")
-                return
-
-            # Load data
-            data_granted = pd.read_csv(access_granted_path)
-            data_denied = pd.read_csv(access_denied_path)
-
-            # Filter based on access status (GRANTED or DENIED)
-            if access_status == "GRANTED":
-                data = data_granted
-            elif access_status == "DENIED":
-                data = data_denied
-            else:
-                data = pd.concat([data_granted, data_denied])
-
-            # Apply additional filters
-            if reg:
-                data = data[data['Registration Number'].str.upper() == reg]
-
-            if direction and direction != "All":
-                data = data[data['Direction'] == direction]
-
-            if date_input:
-                data = data[data['Date'] == date_input]
-
-            # Filter by time range
-            if time_from_input and time_to_input:
-                data = data[(data['Time'] >= time_from_input) & (data['Time'] <= time_to_input)]
-
+            report_generator = ReportsGenerator()
+            # Gather filter input from the UI
+            filters = self.create_filters()
+            # Generate the report using ReportsGenerator
+            data = report_generator.generate_report(filters.to_dict())
             # Populate the report table
             self.populateReportTable(data)
-
         except Exception as e:
             QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
+            traceback.print_exc()
 
     def populateReportTable(self, data):
         """Populate the report table with the filtered data."""
         self.table.setRowCount(len(data))
         for row in range(len(data)):
-            self.table.setItem(row, 0, QTableWidgetItem(data.iloc[row]['Registration Number']))
-            self.table.setItem(row, 1, QTableWidgetItem(data.iloc[row]['Date']))
-            self.table.setItem(row, 2, QTableWidgetItem(data.iloc[row]['Time']))
-            self.table.setItem(row, 3, QTableWidgetItem(data.iloc[row]['Direction']))
-            self.table.setItem(row, 4, QTableWidgetItem(data.iloc[row]['Event Type']))  # Assuming 'Event Type' contains Access Level
-            # self.table.setItem(row, 5, QTableWidgetItem(data.iloc[row]['Access Status']))  # Assuming this field is available
+            self.table.setItem(row, 0, QTableWidgetItem(data.iloc[row][REGISTRATION_NUMBER]))
+            self.table.setItem(row, 1, QTableWidgetItem(data.iloc[row][DATE]))
+            self.table.setItem(row, 2, QTableWidgetItem(data.iloc[row][TIME]))
+            self.table.setItem(row, 3, QTableWidgetItem(data.iloc[row][DIRECTION]))
+            # self.table.setItem(row, 4, QTableWidgetItem(data.iloc[row][ACCESS_LEVEL]))  # Assuming 'Access Level' is under 'Event Type'
