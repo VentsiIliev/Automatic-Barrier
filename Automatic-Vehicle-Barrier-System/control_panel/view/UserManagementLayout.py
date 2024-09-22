@@ -4,16 +4,22 @@ from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QLabel, QHBoxLayout
 
 from API.SingletonDatabase import SingletonDatabase
 from control_panel import Validations
+from control_panel.Settings import Settings
+from control_panel.data_managment.ReportType import ReportType
 from control_panel.view.BaseTableLayout import BaseLayout
 from control_panel.data_managment.Filter import Filter
 from control_panel.model.User import User
 
 # Constants for Layout and Table
 LAYOUT_TITLE = "User Management"
+CSV_FILE = Settings.USERS_CSV
 TABLE_HEADERS = ["User", "Password", "Email", "Role"]
 USERNAME_INPUT_FIELD_LABEL = "Username"
 PASSWORD_INPUT_FIELD_LABEL = "Password"
+
+ROLE_INPUT_FIELD_LABEL = "Role"
 ROLE_INPUT_FIELD_LABELS = ["Select Role", "Manager", "Admin"]
+
 EMAIL_INPUT_FIELD_LABEL = "Email"
 ADD_USER_BUTTON_LABEL = "Add User"
 UPDATE_USER_BUTTON_LABEL = "Update User"
@@ -57,7 +63,7 @@ class UserManagementLayout(BaseLayout):
         self.passwordInput = self.addInputField(PASSWORD_INPUT_FIELD_LABEL)
         userDetailsLayout.addWidget(self.passwordInput)
 
-        roleLabel = QLabel("Role", self)
+        roleLabel = QLabel(ROLE_INPUT_FIELD_LABEL, self)
         userDetailsLayout.addWidget(roleLabel)
         self.roleInput = self.addComboBox(ROLE_INPUT_FIELD_LABELS)
         userDetailsLayout.addWidget(self.roleInput)
@@ -94,7 +100,7 @@ class UserManagementLayout(BaseLayout):
     def loadUsersTable(self):
         """Load existing users from the database and populate the user table."""
         self.table.setRowCount(0)
-        users = SingletonDatabase().getInstance().get_repo('users').get_all()
+        users = SingletonDatabase().getInstance().get_repo(CSV_FILE).get_all()
         for user in users:
             rowPosition = self.table.rowCount()
             self.table.insertRow(rowPosition)
@@ -134,14 +140,14 @@ class UserManagementLayout(BaseLayout):
             return
 
         user = User(username, password, email, role)
-        users = SingletonDatabase().getInstance().get_repo('users').get_all()
+        users = SingletonDatabase().getInstance().get_repo(CSV_FILE).get_all()
 
         if any(u.username == username for u in users):
             QMessageBox.warning(self, INPUT_ERROR_TITLE, WARNING_MESSAGE_USERNAME_EXISTS)
             return
 
         try:
-            repo = SingletonDatabase().getInstance().get_repo('users')
+            repo = SingletonDatabase().getInstance().get_repo(CSV_FILE)
             repo.insert(user)
         except Exception as e:
             QMessageBox.critical(self, ERROR_TITLE, str(e))
@@ -172,7 +178,7 @@ class UserManagementLayout(BaseLayout):
             return
 
         try:
-            repo = SingletonDatabase().getInstance().get_repo('users')
+            repo = SingletonDatabase().getInstance().get_repo(CSV_FILE)
             repo.update(username, password, email, role)
         except Exception as e:
             QMessageBox.critical(self, ERROR_TITLE, str(e))
@@ -189,7 +195,7 @@ class UserManagementLayout(BaseLayout):
 
         username = self.table.item(selected_row, 0).text()
         try:
-            repo = SingletonDatabase().getInstance().get_repo('users')
+            repo = SingletonDatabase().getInstance().get_repo(CSV_FILE)
             repo.delete(username)
         except Exception as e:
             QMessageBox.critical(self, ERROR_TITLE, str(e))
@@ -207,7 +213,7 @@ class UserManagementLayout(BaseLayout):
 
     def search_users(self):
         filters = self.create_user_filters()
-        super().generate_report(filters, report_type="user")
+        super().generate_report(filters, ReportType.USER)
 
     def clearInputs(self):
         """Clear input fields."""

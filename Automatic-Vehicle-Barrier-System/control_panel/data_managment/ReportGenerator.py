@@ -3,39 +3,42 @@ import traceback
 import pandas as pd
 
 from API.SingletonDatabase import SingletonDatabase
+from control_panel.Settings import Settings
+from control_panel.data_managment.ReportType import ReportType
+
+ACCESS_GRANTED_CSV = Settings.ACCESS_GRANTED_CSV
+ACCESS_DENIED_CSV = Settings.ACCESS_DENIED_CSV
+USERS_CSV = Settings.USERS_CSV
+WHITELISTED_CSV = Settings.WHITELISTED_CSV
+
 
 
 class ReportsGenerator:
     def __init__(self):
         pass
 
-    def generate_report(self, filters, report_type="access"):
+    def generate_report(self, filters, report_type):
         """Generate reports based on filters. Can handle 'access' or 'user' report types."""
         try:
-            if report_type == "access":
+            if report_type == ReportType.ACCESS:
                 # Existing access report generation code
                 access_status = filters.get('access_status')
-                print("access_status ->>", access_status)
                 if access_status == "GRANTED":
-                    data = SingletonDatabase().getInstance().get_repo("granted").get_data(filters)
+                    data = SingletonDatabase().getInstance().get_repo(ACCESS_GRANTED_CSV).get_data(filters)
                 elif access_status == "DENIED":
-                    data = SingletonDatabase().getInstance().get_repo("denied").get_data(filters)
+                    data = SingletonDatabase().getInstance().get_repo(ACCESS_DENIED_CSV).get_data(filters)
                 else:
-                    print("All access status")
-                    access_granted_data = SingletonDatabase().getInstance().get_repo("granted").get_data(filters)
-                    print("access_granted_data ->>", access_granted_data)
-                    access_denied_data = SingletonDatabase().getInstance().get_repo("denied").get_data(filters)
-                    print("access_denied_data ->>", access_denied_data)
+                    access_granted_data = SingletonDatabase().getInstance().get_repo(ACCESS_GRANTED_CSV).get_data(filters)
+                    access_denied_data = SingletonDatabase().getInstance().get_repo(ACCESS_DENIED_CSV).get_data(filters)
                     data = pd.concat([access_granted_data, access_denied_data])
-                    print("data ->>", data)
-            elif report_type == "user":
+            elif report_type == ReportType.USER:
                 # New logic to generate user report based on filters
-                data = SingletonDatabase().getInstance().get_repo("users").get_data(filters)
-            elif report_type == "whitelisted":
+                data = SingletonDatabase().getInstance().get_repo(USERS_CSV).get_data(filters)
+            elif report_type == ReportType.WHITELISTED:
                 # New logic to generate whitelisted report based on filters
-                data = SingletonDatabase().getInstance().get_repo("whitelisted").get_data(filters)
+                data = SingletonDatabase().getInstance().get_repo(WHITELISTED_CSV).get_data(filters)
             else:
-                raise ValueError("Unknown report type")
+                raise ValueError(f"Unknown report type - {report_type}")
 
             return data
 

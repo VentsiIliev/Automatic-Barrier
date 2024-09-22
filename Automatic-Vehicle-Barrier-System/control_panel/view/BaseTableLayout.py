@@ -92,7 +92,7 @@ class BaseLayout(QWidget):
             for col, value in enumerate(row_data):
                 self.table.setItem(rowPosition, col, QTableWidgetItem(str(value)))  # Add each cell value as a string
 
-    def generate_report(self, filters, report_type="access"):
+    def generate_report(self, filters, report_type):
         try:
             report_generator = ReportsGenerator()
 

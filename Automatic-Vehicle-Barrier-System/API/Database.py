@@ -1,5 +1,6 @@
 import os
 
+from control_panel.Settings import Settings
 from model.access_events.AccessEventType import AccessEventType
 from repositories.csv_repositories.CSVAccessDeniedRepository import CSVAccessDeniedRepository
 from repositories.csv_repositories.CSVAccessGrantedRepository import CSVAccessGrantedRepository
@@ -21,18 +22,18 @@ class Database:
 
     def get_repo(self, repo):
         """Return the repository object for the specified repository."""
-        if repo == 'granted':
+        if repo == Settings.ACCESS_GRANTED_CSV:
             return self.access_granted_repo
-        elif repo == 'denied':
+        elif repo == Settings.ACCESS_DENIED_CSV:
             return self.access_denied_repo
-        elif repo == 'vehicles':
+        elif repo == Settings.VEHICLES_CSV:
             return self.vehicles_on_premises_repo
-        elif repo == 'whitelisted':
+        elif repo == Settings.WHITELISTED_CSV:
             return self.whitelisted_vehicles_repo
-        elif repo == 'users':
+        elif repo == Settings.USERS_CSV:
             return self.users_repo
         else:
-            raise ValueError("Invalid repository specified.")
+            raise ValueError(f"Invalid repository specified.{repo}")
 
     # def get_data(self, query, repo):
     #     """Retrieve data from the specified repository."""

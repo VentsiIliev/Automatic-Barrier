@@ -1,19 +1,33 @@
 from PyQt5.QtWidgets import QHBoxLayout, QLabel
 
+from control_panel.Settings import Settings
+from control_panel.data_managment.ReportType import ReportType
 from control_panel.view.BaseTableLayout import BaseLayout
 from control_panel.data_managment.Filter import Filter
 
 LAYOUT_TITLE = "Reports"
+CSV_FILE_ACCESS_GRANTED = Settings.ACCESS_GRANTED_CSV
+CSV_FILE_ACCESS_DENIED = Settings.ACCESS_DENIED_CSV
 TABLE_HEADERS = ["Access Status", "Date", "Time", "Registration", "Direction", "Owner"]
 REGISTRATION_INPUT_FIELD_LABEL = "Registration Number"
 FROM_DATE_INPUT_FIELD_LABEL = "From Date"
 TO_DATE_INPUT_FIELD_LABEL = "To Date"
 FROM_TIME_INPUT_FIELD_LABEL = "From Time"
 TO_TIME_INPUT_FIELD_LABEL = "To Time"
+
+DIRECTION_FIELD_LABEL = "Direction"
 DIRECTION_INPUT_FIELD_LABELS = ["All", "IN", "OUT"]
+
+ACCESS_LEVEL_INPUT_FIELD_LABEL = "Access Level"
 ACCESS_LEVEL_INPUT_FIELD_LABELS = ["All", "Admin", "User", "Guest"]
+
+ACCESS_STATUS_INPUT_FIELD_LABEL = "Access Status"
 ACCESS_STATUS_INPUT_FIELD_LABELS = ["All", "GRANTED", "DENIED"]
+
 GENERATE_REPORT_BUTTON_LABEL = "Generate Report"
+
+DATE_FORMAT = Settings.DATE_FORMAT
+TIME_FORMAT = Settings.TIME_FORMAT
 
 class ReportsLayout(BaseLayout):
     def __init__(self, parent=None):
@@ -64,17 +78,17 @@ class ReportsLayout(BaseLayout):
         otherFiltersLayout = QHBoxLayout()
 
         # Add 'Direction', 'Access Level', and 'Access Status' fields to the horizontal layout
-        directionLabel = QLabel("Direction", self)
+        directionLabel = QLabel(DIRECTION_FIELD_LABEL, self)
         otherFiltersLayout.addWidget(directionLabel)
         self.directionInput = self.addComboBox(DIRECTION_INPUT_FIELD_LABELS)
         otherFiltersLayout.addWidget(self.directionInput)
 
-        accessLevelLabel = QLabel("Access Level", self)
+        accessLevelLabel = QLabel(ACCESS_LEVEL_INPUT_FIELD_LABEL, self)
         otherFiltersLayout.addWidget(accessLevelLabel)
         self.accessLevelInput = self.addComboBox(ACCESS_LEVEL_INPUT_FIELD_LABELS)
         otherFiltersLayout.addWidget(self.accessLevelInput)
 
-        accessStatusLabel = QLabel("Access Status", self)
+        accessStatusLabel = QLabel(ACCESS_STATUS_INPUT_FIELD_LABEL, self)
         otherFiltersLayout.addWidget(accessStatusLabel)
         self.accessStatusInput = self.addComboBox(ACCESS_STATUS_INPUT_FIELD_LABELS)
         otherFiltersLayout.addWidget(self.accessStatusInput)
@@ -95,22 +109,22 @@ class ReportsLayout(BaseLayout):
 
             # Correctly include both 'from' and 'to' dates in the date range tuple
             date_range=(
-                self.fromDateInput.date().toString("yyyy-MM-dd"), self.toDateInput.date().toString("yyyy-MM-dd"))
+                self.fromDateInput.date().toString(DATE_FORMAT), self.toDateInput.date().toString(DATE_FORMAT))
             if self.fromDateInput.date() and self.toDateInput.date() else None,
 
             # Include both 'from' and 'to' times in the time range tuple
-            time_range=(self.timeFromInput.time().toString("hh:mm:ss"), self.timeToInput.time().toString("hh:mm:ss"))
+            time_range=(self.timeFromInput.time().toString(TIME_FORMAT), self.timeToInput.time().toString(TIME_FORMAT))
             if self.timeFromInput.time() and self.timeToInput.time() else None,
 
             # Only include direction if it's not "All"
-            direction=self.directionInput.currentText() if self.directionInput.currentText() != "All" else None,
+            direction=self.directionInput.currentText() if self.directionInput.currentText() != DIRECTION_INPUT_FIELD_LABELS[0] else None,
 
             # Only include access status if it's not "All"
-            access_status=self.accessStatusInput.currentText() if self.accessStatusInput.currentText() != "All" else None
+            access_status=self.accessStatusInput.currentText() if self.accessStatusInput.currentText() != ACCESS_STATUS_INPUT_FIELD_LABELS[0] else None
         )
 
         return filters
 
     def get_report(self):
         filters = self.create_filters()
-        super().generate_report(filters)
+        super().generate_report(filters,ReportType.ACCESS)

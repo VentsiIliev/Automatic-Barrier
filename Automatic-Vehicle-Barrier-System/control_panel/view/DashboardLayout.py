@@ -1,12 +1,15 @@
 from PyQt5.QtWidgets import QLabel, QMessageBox, QHBoxLayout
 
 from API.SingletonDatabase import SingletonDatabase
+from control_panel.Settings import Settings
+from control_panel.data_managment.ReportType import ReportType
 from control_panel.view.BaseTableLayout import BaseLayout
 from control_panel.data_managment.Filter import Filter
 from control_panel.model.Vehicle import Vehicle
 from model.access_events.AccessLevel import AccessLevel
 
 # Constants for Layout and Titles
+CSV_FILE = Settings.WHITELISTED_CSV
 TABLE_HEADERS = ["Registration", "Access Level", "Owner"]
 LAYOUT_TITLE = "Dashboard - Manage Whitelisted Vehicles"
 WHITELISTED_VEHICLES_LABEL = "Whitelisted Vehicles"
@@ -109,7 +112,7 @@ class DashboardLayout(BaseLayout):
 
     def loadVehicleTable(self):
         """Load the whitelisted vehicles into the table."""
-        vehicles = SingletonDatabase().getInstance().get_repo('whitelisted').get_all()
+        vehicles = SingletonDatabase().getInstance().get_repo(CSV_FILE).get_all()
         self.populate_table([[vehicle.registration_number,
                               AccessLevel(vehicle.access_level).name,
                               vehicle.owner] for vehicle in vehicles])
@@ -181,14 +184,14 @@ class DashboardLayout(BaseLayout):
 
         access_level_value = AccessLevel[access_level].value
         vehicle = Vehicle(registration, owner, access_level_value)
-        vehicles = SingletonDatabase().getInstance().get_repo('whitelisted').get_all()
+        vehicles = SingletonDatabase().getInstance().get_repo(CSV_FILE).get_all()
 
         for v in vehicles:
             if v.registration_number == registration:
                 QMessageBox.warning(self, 'Error', WARNING_MESSAGE_VEHICLE_ALREADY_WHITELISTED)
                 return
 
-        SingletonDatabase().getInstance().get_repo('whitelisted').insert(vehicle)
+        SingletonDatabase().getInstance().get_repo(CSV_FILE).insert(vehicle)
         self.loadVehicleTable()
         self.addVehicleInput.clear()
         self.addOwnerInput.clear()
@@ -203,7 +206,7 @@ class DashboardLayout(BaseLayout):
                                                 CONFIRM_DELETE_MESSAGE.format(registration),
                                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if confirmation == QMessageBox.Yes:
-                SingletonDatabase().getInstance().get_repo('whitelisted').delete(registration)
+                SingletonDatabase().getInstance().get_repo(CSV_FILE).delete(registration)
                 self.loadVehicleTable()
                 self.removeVehicleInput.clear()
 
@@ -218,4 +221,4 @@ class DashboardLayout(BaseLayout):
     def search_vehicle(self):
         """Search vehicles based on the input filters."""
         filters = self.create_filters()
-        super().generate_report(filters, report_type="whitelisted")
+        super().generate_report(filters, report_type=ReportType.WHITELISTED)
