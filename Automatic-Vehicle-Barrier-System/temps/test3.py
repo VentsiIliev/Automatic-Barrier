@@ -1,10 +1,10 @@
 import cv2
 
-from API.LicensePlateRecognizer import LicensePlateRecognizer
-from model.LicencePlateDetector import LicencePlateDetector
-from model.LicensePlateReader import LicensePlateReader
+from core_system.API.LicensePlateRecognizer import LicensePlateRecognizer
+from core_system.model.LicencePlateDetector import LicencePlateDetector
+from core_system.model.LicensePlateReader import LicensePlateReader
 
-source = cv2.VideoCapture('../assets/videos/sample2.mp4')
+source = cv2.VideoCapture('../core_system/assets/videos/sample2.mp4')
 
 license_plates_detector = LicencePlateDetector('assets/license_plate_detector.pt')
 license_plate_reader = LicensePlateReader("^[ABEKMHOPCTYX]{1,2}[0123456789]{4}[ABEKMHOPCTYX]{2}$")

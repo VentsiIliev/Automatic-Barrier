@@ -5,16 +5,16 @@ from utils import util
 
 print(cv2.__version__)
 
-cascade_src = '../assets/models/cars.xml'
+cascade_src = '../core_system/assets/models/cars.xml'
 # video_src = 'assets/sample.mp4'
 # video_src = 'dataset/video2.avi'
 # video_src = 'assets/sample2.mp4'
 
 # cap = cv2.VideoCapture(video_src)
 car_cascade = cv2.CascadeClassifier(cascade_src)
-license_plate_detector = YOLO('../assets/models/license_plate_detector.pt')
+license_plate_detector = YOLO('../core_system/assets/models/license_plate_detector.pt')
 
-img = cv2.imread('../assets/images/20240916_150924.jpg')
+img = cv2.imread('../core_system/assets/images/20240916_150924.jpg')
 img = cv2.resize(img, (1920, 1080))
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 cars = car_cascade.detectMultiScale(gray, 1.1, 1)

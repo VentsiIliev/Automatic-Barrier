@@ -1,9 +1,6 @@
 import cv2
 from ultralytics import YOLO
 
-from API.VehicleDetection import VehicleDetection
-from model.VehicleDetector import VehicleDetector
-
 camera = cv2.VideoCapture(1)
 # camera = cv2.VideoCapture('../assets/videos/sample2.mp4')
 # load car detection model
@@ -12,7 +9,7 @@ car_detector = YOLO('assets/models/yolov8n.pt')
 # car_detector = VehicleDetector('assets/models/yolov8n.pt')
 # vehicle_detection = VehicleDetection(car_detector)
 # load license plate detection model
-license_plate_detector = YOLO('../assets/models/license_plate_detector.pt')
+license_plate_detector = YOLO('../core_system/assets/models/license_plate_detector.pt')
 
 target_classes = [2, 3, 5, 7]
 

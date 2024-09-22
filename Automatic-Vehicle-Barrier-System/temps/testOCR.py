@@ -5,7 +5,7 @@ import cv2
 from utils import util
 
 # Get a list of all files in the directory
-image_files = os.listdir('../assets/images/plates')
+image_files = os.listdir('../core_system/assets/images/plates')
 
 
 # Process each image file
@@ -20,7 +20,7 @@ for image_file in image_files:
     # Check if the file is an image
     if image_file.endswith('.jpg') or image_file.endswith('.png'):
         # Construct the full image path
-        image_path = os.path.join('../assets/images/plates', image_file)
+        image_path = os.path.join('../core_system/assets/images/plates', image_file)
 
         # Load the image
         img = cv2.imread(image_path)

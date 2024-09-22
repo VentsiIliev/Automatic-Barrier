@@ -1,5 +1,0 @@
-DATABASE_DIRECTORY = "database"
-ACCESS_DENIED_TABLE = "access_denied.csv"
-ACCESS_GRANTED_TABLE = "access_granted.csv"
-VEHICLES_ON_PREMISES_TABLE = "vehicles_on_premises.csv"
-WHITELISTED_VEHICLES_TABLE = "whitelisted_vehicles.csv"

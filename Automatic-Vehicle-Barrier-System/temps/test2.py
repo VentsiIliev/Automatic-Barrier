@@ -4,12 +4,12 @@ from ultralytics import YOLO
 from utils import util
 
 # camera = cv2.VideoCapture(0)
-camera = cv2.VideoCapture('../assets/videos/sample2.mp4')
+camera = cv2.VideoCapture('../core_system/assets/videos/sample2.mp4')
 # load car detection model
-car_cascade = cv2.CascadeClassifier('../assets/models/cars.xml')
-car_detector = YOLO('../assets/models/yolov8n.pt')
+car_cascade = cv2.CascadeClassifier('../core_system/assets/models/cars.xml')
+car_detector = YOLO('../core_system/assets/models/yolov8n.pt')
 # load license plate detection model
-license_plate_detector = YOLO('../assets/models/license_plate_detector.pt')
+license_plate_detector = YOLO('../core_system/assets/models/license_plate_detector.pt')
 
 target_classes = [2, 3, 5, 7]
 
@@ -58,7 +58,7 @@ while True:
         global_y2 = y + int(y2)
 
         license_plate_region = car_region[int(y1):int(y2), int(x1):int(x2)]
-        cv2.imwrite('../assets/results/raw_license_plate_region.jpg', license_plate_region)
+        cv2.imwrite('../core_system/assets/results/raw_license_plate_region.jpg', license_plate_region)
 
         result = util.read_license_plate(license_plate_region)
         if result is None:

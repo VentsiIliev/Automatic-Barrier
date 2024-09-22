@@ -5,14 +5,14 @@ import time
 import cv2
 
 # import util
-from model.LicencePlateDetector import LicencePlateDetector
-from model.LicensePlate import LicensePlate
+from core_system.model.LicencePlateDetector import LicencePlateDetector
+from core_system.model.LicensePlate import LicensePlate
 from datetime import datetime
 
-from model.LicensePlateReader import LicensePlateReader
+from core_system.model.LicensePlateReader import LicensePlateReader
 
 # camera = cv2.VideoCapture(1)
-camera = cv2.VideoCapture('../assets/videos/sample2.mp4')
+camera = cv2.VideoCapture('../core_system/assets/videos/sample2.mp4')
 # camera = cv2.VideoCapture('assets/vecteezy_the-road-on-the-hill_1798948.mp4')
 # camera = cv2.VideoCapture('assets/vecteezy_traffic-cars-passing-in-road-with-asphalt-with-cracks-seen_36990287.mov')
 # camera = cv2.VideoCapture('assets/demo.mp4')
@@ -46,7 +46,7 @@ cv2.createTrackbar('roi_y2', 'frame', 600, 720, nothing)
 cv2.createTrackbar('confidence', 'frame', 50, 100, nothing)
 reg_text = "No license plates detected"
 license_plates_detected = []
-csv_file = "../assets/results/formatted_results.csv"
+csv_file = "../core_system/assets/results/formatted_results.csv"
 while True:
     time_elapsed = time.time() - prev
     ret, frame = camera.read()
