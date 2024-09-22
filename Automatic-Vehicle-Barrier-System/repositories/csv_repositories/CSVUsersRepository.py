@@ -1,3 +1,5 @@
+import traceback
+
 from model.User import User
 from repositories.csv_repositories.BaseCSVRepository import BaseCSVRepository
 from repositories.csv_repositories.Constants import USER_FIELDS, USER, PASSWORD, EMAIL, ROLE
@@ -28,15 +30,22 @@ class CSVUsersRepository(BaseCSVRepository):
         return users
 
     def get(self, username):
-        for row in self._read_rows():
-            if row[USER] == username:
-                return row
-        return None
+        df = self._read_rows()
+        row = df[df[USER] == username]  # Use lowercase 'User'
+        # Iterate over the rows of the DataFrame
+        if not row.empty:
+            row = row.iloc[0]
+            return User(row[USER].values[0], row[PASSWORD].values[0], row[EMAIL].values[0], row[ROLE].values[0])
+
+        return None  # Return None if user is not found
 
     def insert(self, user):
         print("Inserting user")
-        if self.get(user.username) is None:  # Check by username
-            super().insert(**{USER: user.username, PASSWORD: user.password, EMAIL: user.email, ROLE: user.role})
+        try:
+            if self.get(user.username) is None:  # Check by username
+                super().insert(**{USER: user.username, PASSWORD: user.password, EMAIL: user.email, ROLE: user.role})
+        except Exception as e:
+            traceback.print_exc()
 
     def delete(self, username):
         super().delete(username)
@@ -53,20 +62,23 @@ class CSVUsersRepository(BaseCSVRepository):
                     row[ROLE] = updated_user[ROLE]
         super().update(current_rows)
 
+    # def get_data(self, filters=None):
+    #     users = []
+    #     data = super().get_data(filters)
+    #
+    #     # Skip the first row (header) using .iloc
+    #     for index, row in data.iloc[1:].iterrows():  # Start from the second row
+    #         print("row", row)
+    #         user = User(
+    #             username=row[USER],
+    #             password=row[PASSWORD],
+    #             email=row[EMAIL],
+    #             role=row[ROLE]
+    #         )
+    #         users.append(user)
+    #
+    #     return users
+
     def get_data(self, filters=None):
-        users = []
-        data = super().get_data(filters)
-
-        # Skip the first row (header) using .iloc
-        for index, row in data.iloc[1:].iterrows():  # Start from the second row
-            print("row", row)
-            user = User(
-                username=row[USER],
-                password=row[PASSWORD],
-                email=row[EMAIL],
-                role=row[ROLE]
-            )
-            users.append(user)
-
-        return users
-
+        """Retrieve filtered data based on given criteria."""
+        return super().get_data(filters)

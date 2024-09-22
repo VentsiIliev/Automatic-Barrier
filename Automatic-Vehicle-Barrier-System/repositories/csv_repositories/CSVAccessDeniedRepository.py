@@ -44,3 +44,7 @@ class CSVAccessDeniedRepository(BaseCSVRepository):
                 event_row.iloc[0][DIRECTION]
             )
         return None
+
+    def get_data(self, filters=None):
+        """Retrieve filtered data based on given criteria."""
+        return super().get_data(filters)

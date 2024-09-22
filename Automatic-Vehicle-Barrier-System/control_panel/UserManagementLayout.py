@@ -1,29 +1,57 @@
 import traceback
 
 from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem
+
 from API.SingletonDatabase import SingletonDatabase
 from control_panel import Validations
-from control_panel.BaseLayout import BaseLayout
+from control_panel.BaseTableLayout import BaseLayout
 from control_panel.data_managment.Filter import Filter
 from model.User import User
+
+# Constants for Layout and Table
+LAYOUT_TITLE = "User Management"
+TABLE_HEADERS = ["User", "Password", "Email", "Role"]
+USERNAME_INPUT_FIELD_LABEL = "Username"
+PASSWORD_INPUT_FIELD_LABEL = "Password"
+ROLE_INPUT_FIELD_LABELS = ["Select Role", "Manager", "Admin"]
+EMAIL_INPUT_FIELD_LABEL = "Email"
+ADD_USER_BUTTON_LABEL = "Add User"
+UPDATE_USER_BUTTON_LABEL = "Update User"
+REMOVE_USER_BUTTON_LABEL = "Remove User"
+SEARCH_USER_BUTTON_LABEL = "Search User"
+
+
+# Warning Messages
+WARNING_MESSAGE_SELECT_USER_TO_UPDATE = "Please select a user to update."
+WARNING_MESSAGE_SELECT_USER_TO_REMOVE = "Please select a user to remove."
+WARNING_MESSAGE_USERNAME_EXISTS = "Username already exists."
+WARNING_MESSAGE_ENTER_ALL_FIELDS = "Please enter all fields."
+WARNING_MESSAGE_INVALID_EMAIL = "Please enter a valid email."
+WARNING_MESSAGE_PLEASE_SELECT_ROLE = "Please select a role."
+INPUT_ERROR_TITLE = "Input Error"
+SELECTION_ERROR_TITLE = "Selection Error"
+ERROR_TITLE = "Error"
+
+
 
 
 class UserManagementLayout(BaseLayout):
     def __init__(self, parent=None):
-        super().__init__("User Management", parent)
+        self.table_headers = TABLE_HEADERS
+        super().__init__(LAYOUT_TITLE, self.table_headers, parent)
         self.initUI()
 
     def initUI(self):
         """Initialize the user management layout."""
-        self.addTable(4, ["Username", "Password", "Role", "Email"])
-        self.usernameInput = self.addInputField("Username")
-        self.passwordInput = self.addInputField("Password")
-        self.roleInput = self.addComboBox(["Select Role", "Manager", "Admin"])
-        self.emailInput = self.addInputField("Email")
-        self.addButton("Add User", self.addUser)
-        self.addButton("Update User", self.updateUser)
-        self.addButton("Remove User", self.removeUser)
-        self.addButton("Search User", self.searchUser)
+        self.addTable(4, self.table_headers)
+        self.usernameInput = self.addInputField(USERNAME_INPUT_FIELD_LABEL)
+        self.passwordInput = self.addInputField(PASSWORD_INPUT_FIELD_LABEL)
+        self.roleInput = self.addComboBox(ROLE_INPUT_FIELD_LABELS)
+        self.emailInput = self.addInputField(EMAIL_INPUT_FIELD_LABEL)
+        self.addButton(ADD_USER_BUTTON_LABEL, self.addUser)
+        self.addButton(UPDATE_USER_BUTTON_LABEL, self.updateUser)
+        self.addButton(REMOVE_USER_BUTTON_LABEL, self.removeUser)
+        self.addButton(SEARCH_USER_BUTTON_LABEL, self.search_users)
         self.loadUsersTable()
 
     def loadUsersTable(self):
@@ -45,31 +73,39 @@ class UserManagementLayout(BaseLayout):
         email = self.emailInput.text()
 
         if not Validations.validate_email(email):
-            QMessageBox.warning(self, "Input Error", "Please enter a valid email.")
+            QMessageBox.warning(self, INPUT_ERROR_TITLE, WARNING_MESSAGE_INVALID_EMAIL)
             return
         if not Validations.validate_role(role):
-            QMessageBox.warning(self, "Input Error", "Please select a role.")
+            QMessageBox.warning(self, INPUT_ERROR_TITLE, WARNING_MESSAGE_PLEASE_SELECT_ROLE)
             return
         if not username or not password or not role or not email:
-            QMessageBox.warning(self, "Input Error", "Please enter all fields.")
+            QMessageBox.warning(self, INPUT_ERROR_TITLE, WARNING_MESSAGE_ENTER_ALL_FIELDS)
             return
 
         user = User(username, password, email, role)
         users = SingletonDatabase().getInstance().get_repo('users').get_all()
 
         if any(u.username == username for u in users):
-            QMessageBox.warning(self, "Input Error", "Username already exists.")
+            QMessageBox.warning(self, INPUT_ERROR_TITLE, WARNING_MESSAGE_USERNAME_EXISTS)
             return
 
-        repo = SingletonDatabase().getInstance().get_repo('users')
-        repo.insert(user)
-        self.loadUsersTable()
+        try:
+            repo = SingletonDatabase().getInstance().get_repo('users')
+            repo.insert(user)
+        except Exception as e:
+            QMessageBox.critical(self, ERROR_TITLE,str(e))
+            traceback.print_exc()
+        try:
+            self.loadUsersTable()
+        except Exception as e:
+            QMessageBox.critical(self, ERROR_TITLE, str(e))
+            traceback.print_exc()
         self.clearInputs()
 
     def updateUser(self):
-        selected_row = self.table.currentRow()  # Fixed from `userTable` to `table`
+        selected_row = self.table.currentRow()
         if selected_row < 0:
-            QMessageBox.warning(self, "Selection Error", "Please select a user to update.")
+            QMessageBox.warning(self, SELECTION_ERROR_TITLE, WARNING_MESSAGE_SELECT_USER_TO_UPDATE)
             return
 
         username = self.usernameInput.text()
@@ -78,13 +114,13 @@ class UserManagementLayout(BaseLayout):
         email = self.emailInput.text()
 
         if not Validations.validate_email(email):
-            QMessageBox.warning(self, "Input Error", "Please enter a valid email.")
+            QMessageBox.warning(self, INPUT_ERROR_TITLE, WARNING_MESSAGE_INVALID_EMAIL)
             return
         if not Validations.validate_role(role):
-            QMessageBox.warning(self, "Input Error", "Please select a role.")
+            QMessageBox.warning(self, INPUT_ERROR_TITLE, WARNING_MESSAGE_PLEASE_SELECT_ROLE)
             return
         if not username or not password or not role or not email:
-            QMessageBox.warning(self, "Input Error", "Please enter all fields.")
+            QMessageBox.warning(self, INPUT_ERROR_TITLE, WARNING_MESSAGE_ENTER_ALL_FIELDS)
             return
 
         repo = SingletonDatabase().getInstance().get_repo('users')
@@ -93,12 +129,12 @@ class UserManagementLayout(BaseLayout):
         self.clearInputs()
 
     def removeUser(self):
-        selected_row = self.table.currentRow()  # Fixed from `userTable` to `table`
+        selected_row = self.table.currentRow()
         if selected_row < 0:
-            QMessageBox.warning(self, "Selection Error", "Please select a user to remove.")
+            QMessageBox.warning(self, SELECTION_ERROR_TITLE, WARNING_MESSAGE_SELECT_USER_TO_REMOVE)
             return
 
-        username = self.table.item(selected_row, 0).text()  # Fixed from `userTable` to `table`
+        username = self.table.item(selected_row, 0).text()
         repo = SingletonDatabase().getInstance().get_repo('users')
         repo.delete(username)
         self.loadUsersTable()
@@ -107,40 +143,17 @@ class UserManagementLayout(BaseLayout):
         """Gather user input for filtering and return a Filter object."""
         return Filter(
             username=self.usernameInput.text() or None,
-            role=self.roleInput.currentText() if self.roleInput.currentText() != "Select Role" else None,
+            role=self.roleInput.currentText() if self.roleInput.currentText() != ROLE_INPUT_FIELD_LABELS[0] else None,
             email=self.emailInput.text() or None
         )
 
-    def searchUser(self):
-
+    def search_users(self):
         filters = self.create_user_filters()
-        self.table.setRowCount(0)  # Clear the user table before populating
+        super().generate_report(filters, report_type="user")
 
-        # Load users from the database and filter based on the provided filters
-        try:
-            users = SingletonDatabase().getInstance().get_repo('users').get_data(filters.to_dict())
-        except Exception as e:
-            QMessageBox.critical(self, "Error Loading data", f"An error occurred: {str(e)}")
-            #print stack trace
-            traceback.print_exc()
-            return
-        try:
-            for user in users:
-                rowPosition = self.table.rowCount()  # Fixed rowPosition declaration
-                self.table.insertRow(rowPosition)
-                self.table.setItem(rowPosition, 0, QTableWidgetItem(user.username))
-                self.table.setItem(rowPosition, 1,
-                                   QTableWidgetItem(user.password))  # Avoid showing passwords in production
-                self.table.setItem(rowPosition, 2, QTableWidgetItem(user.role))
-                self.table.setItem(rowPosition, 3, QTableWidgetItem(user.email))
-
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
-
-
-def clearInputs(self):
-    """Clear input fields."""
-    self.usernameInput.clear()
-    self.passwordInput.clear()
-    self.emailInput.clear()
-    self.roleInput.setCurrentIndex(0)
+    def clearInputs(self):
+        """Clear input fields."""
+        self.usernameInput.clear()
+        self.passwordInput.clear()
+        self.emailInput.clear()
+        self.roleInput.setCurrentIndex(0)

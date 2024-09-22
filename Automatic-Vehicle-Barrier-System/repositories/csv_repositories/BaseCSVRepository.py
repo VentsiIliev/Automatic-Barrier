@@ -19,10 +19,10 @@ class BaseCSVRepository(BaseRepository):
     def _read_rows(self):
         print(f"Reading rows from: {self.file_path}")
         df = pd.read_csv(self.file_path)
-        print(df.head())  # Print the first few rows to inspect the structure
         return df
 
     def _write_rows(self, df):
+        print(f"Writing rows to: {self.file_path}")
         df.to_csv(self.file_path, index=False)
 
     def clear(self):
@@ -32,20 +32,26 @@ class BaseCSVRepository(BaseRepository):
     def get(self, query):
         """Retrieve rows based on a query matching a specific field."""
         df = self._read_rows()
-        return df[df[self.fieldnames[0]] == query]
+        result = df[df[self.fieldnames[0]] == query]
+        return result
 
     def get_data(self, filters=None):
         """Get data with optional filters."""
         df = self._read_rows()
+        print("Data read successfully, before filtering:", df)
         if filters:
             df = DataFiltering.filterData(df, filters)
+        print("Data after filtering:", df)
         return df
 
     def insert(self, **kwargs):
         """Insert a new row with the given keyword arguments."""
-        print("Inserting")
+
         df = self._read_rows()
-        df = df.append(kwargs, ignore_index=True)
+        print("Existing rows:", df)
+        new_row = pd.DataFrame([kwargs])
+        df = pd.concat([df, new_row], ignore_index=True)
+        print("New row:", new_row)
         self._write_rows(df)
 
     def delete(self, query):

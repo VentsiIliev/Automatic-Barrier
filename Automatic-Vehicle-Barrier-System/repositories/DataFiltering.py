@@ -58,6 +58,14 @@ def filterByEmail(data, email):
     return data[data['email'].str.upper() == email.upper()]
 
 
+def filterByAccessLevel(data, value):
+    """
+    Filter data by access level.
+    """
+    print("Filtering",data)
+    return data[data['Access Level'] == value]
+
+
 def filterData(data, filters):
     """
     Filter data based on a dictionary of filters.
@@ -90,6 +98,10 @@ def filterData(data, filters):
                 data = filterByRole(data, value)
             elif key == 'email':
                 data = filterByEmail(data, value)
+            elif key == 'registration_number':
+                data = filterByRegistrationNumber(data, value)
+            elif key == 'access_level':
+                data = filterByAccessLevel(data, value)
             else:
                 raise ValueError(f"Invalid filter key: {key}")
     return data

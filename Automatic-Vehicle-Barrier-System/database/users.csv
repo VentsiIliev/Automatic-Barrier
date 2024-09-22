@@ -1,6 +1,9 @@
 User,Password,Email,Role
-a,a,a,Manager
 n,a,a,Manager
-h,h,h,Admin
-j,j,j,Manager
-a,a,a,Manager
+a,v,a@b.com,Manager
+h,a,a@b.com,Manager
+j,h,a@b.com,Manager
+l,s,a@b.com,Admin
+u,u,a@b.com,Admin
+v,v,a@b.com,Manager
+q,q,a@b.com,Manager

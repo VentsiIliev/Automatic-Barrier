@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QMessageBox
 
+
 class BarrierControlPanel(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
