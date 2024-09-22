@@ -38,8 +38,6 @@ class DashboardLayout(BaseLayout):
 
     def initUI(self):
         """Initialize the dashboard layout."""
-        self.addTable(3, ["Registration", "Access Level", "Owner"])
-
         # Whitelisted Vehicles Section
         vehicleListLabel = QLabel(WHITELISTED_VEHICLES_LABEL, self)
         self.layout.addWidget(vehicleListLabel)
@@ -98,6 +96,8 @@ class DashboardLayout(BaseLayout):
         searchLayout.addWidget(searchButton)
 
         self.layout.addLayout(searchLayout)
+
+        self.addTable(3, ["Registration", "Access Level", "Owner"])
 
         # Load whitelisted vehicles into the table
         self.loadVehicleTable()

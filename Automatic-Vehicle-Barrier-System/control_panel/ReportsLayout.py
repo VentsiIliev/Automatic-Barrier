@@ -1,3 +1,5 @@
+from PyQt5.QtWidgets import QHBoxLayout, QLabel
+
 from control_panel.BaseTableLayout import BaseLayout
 from control_panel.data_managment.Filter import Filter
 
@@ -24,18 +26,61 @@ class ReportsLayout(BaseLayout):
         # Add input fields (filters)
         self.registrationInput = self.addInputField(REGISTRATION_INPUT_FIELD_LABEL)
 
-        # Add 'From Date' and 'To Date' fields
+        # Create a horizontal layout for date
+        dateLayout = QHBoxLayout()
+
+        # Add 'From Date' and 'To Date' fields to the horizontal layout
+        fromDateLabel = QLabel(FROM_DATE_INPUT_FIELD_LABEL, self)
+        dateLayout.addWidget(fromDateLabel)
         self.fromDateInput = self.addDateField(FROM_DATE_INPUT_FIELD_LABEL)
+        dateLayout.addWidget(self.fromDateInput)
+
+        toDateLabel = QLabel(TO_DATE_INPUT_FIELD_LABEL, self)
+        dateLayout.addWidget(toDateLabel)
         self.toDateInput = self.addDateField(TO_DATE_INPUT_FIELD_LABEL)
+        dateLayout.addWidget(self.toDateInput)
 
-        # Add 'From Time' and 'To Time' fields
+        # Add the horizontal layout to the main layout
+        self.layout.addLayout(dateLayout)
+
+        # Create a horizontal layout for time
+        timeLayout = QHBoxLayout()
+
+        # Add 'From Time' and 'To Time' fields to the horizontal layout
+        fromTimeLabel = QLabel(FROM_TIME_INPUT_FIELD_LABEL, self)
+        timeLayout.addWidget(fromTimeLabel)
         self.timeFromInput = self.addTimeField(FROM_TIME_INPUT_FIELD_LABEL)
-        self.timeToInput = self.addTimeField(TO_TIME_INPUT_FIELD_LABEL)
+        timeLayout.addWidget(self.timeFromInput)
 
-        # Other filters
+        toTimeLabel = QLabel(TO_TIME_INPUT_FIELD_LABEL, self)
+        timeLayout.addWidget(toTimeLabel)
+        self.timeToInput = self.addTimeField(TO_TIME_INPUT_FIELD_LABEL)
+        timeLayout.addWidget(self.timeToInput)
+
+        # Add the horizontal layout to the main layout
+        self.layout.addLayout(timeLayout)
+
+        # Create a horizontal layout for other filters
+        otherFiltersLayout = QHBoxLayout()
+
+        # Add 'Direction', 'Access Level', and 'Access Status' fields to the horizontal layout
+        directionLabel = QLabel("Direction", self)
+        otherFiltersLayout.addWidget(directionLabel)
         self.directionInput = self.addComboBox(DIRECTION_INPUT_FIELD_LABELS)
+        otherFiltersLayout.addWidget(self.directionInput)
+
+        accessLevelLabel = QLabel("Access Level", self)
+        otherFiltersLayout.addWidget(accessLevelLabel)
         self.accessLevelInput = self.addComboBox(ACCESS_LEVEL_INPUT_FIELD_LABELS)
+        otherFiltersLayout.addWidget(self.accessLevelInput)
+
+        accessStatusLabel = QLabel("Access Status", self)
+        otherFiltersLayout.addWidget(accessStatusLabel)
         self.accessStatusInput = self.addComboBox(ACCESS_STATUS_INPUT_FIELD_LABELS)
+        otherFiltersLayout.addWidget(self.accessStatusInput)
+
+        # Add the horizontal layout to the main layout
+        self.layout.addLayout(otherFiltersLayout)
 
         # Add Generate Report Button
         self.addButton(GENERATE_REPORT_BUTTON_LABEL, self.get_report)

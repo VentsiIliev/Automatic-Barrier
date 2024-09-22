@@ -1,6 +1,6 @@
 import traceback
 
-from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem
+from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QLabel, QHBoxLayout
 
 from API.SingletonDatabase import SingletonDatabase
 from control_panel import Validations
@@ -43,15 +43,47 @@ class UserManagementLayout(BaseLayout):
 
     def initUI(self):
         """Initialize the user management layout."""
-        self.addTable(4, self.table_headers)
+        # Create a horizontal layout for user details
+        userDetailsLayout = QHBoxLayout()
+
+        # Add 'Username', 'Password', 'Role', and 'Email' fields to the horizontal layout
+        usernameLabel = QLabel(USERNAME_INPUT_FIELD_LABEL, self)
+        userDetailsLayout.addWidget(usernameLabel)
         self.usernameInput = self.addInputField(USERNAME_INPUT_FIELD_LABEL)
+        userDetailsLayout.addWidget(self.usernameInput)
+
+        passwordLabel = QLabel(PASSWORD_INPUT_FIELD_LABEL, self)
+        userDetailsLayout.addWidget(passwordLabel)
         self.passwordInput = self.addInputField(PASSWORD_INPUT_FIELD_LABEL)
+        userDetailsLayout.addWidget(self.passwordInput)
+
+        roleLabel = QLabel("Role", self)
+        userDetailsLayout.addWidget(roleLabel)
         self.roleInput = self.addComboBox(ROLE_INPUT_FIELD_LABELS)
+        userDetailsLayout.addWidget(self.roleInput)
+
+        emailLabel = QLabel(EMAIL_INPUT_FIELD_LABEL, self)
+        userDetailsLayout.addWidget(emailLabel)
         self.emailInput = self.addInputField(EMAIL_INPUT_FIELD_LABEL)
-        self.addButton(ADD_USER_BUTTON_LABEL, self.addUser)
-        self.addButton(UPDATE_USER_BUTTON_LABEL, self.updateUser)
-        self.addButton(REMOVE_USER_BUTTON_LABEL, self.removeUser)
-        self.addButton(SEARCH_USER_BUTTON_LABEL, self.search_users)
+        userDetailsLayout.addWidget(self.emailInput)
+
+        # Add the horizontal layout to the main layout
+        self.layout.addLayout(userDetailsLayout)
+
+        # Create a horizontal layout for buttons
+        buttonsLayout = QHBoxLayout()
+
+        # Add buttons to the horizontal layout
+        buttonsLayout.addWidget(self.addButton(ADD_USER_BUTTON_LABEL, self.addUser))
+        buttonsLayout.addWidget(self.addButton(UPDATE_USER_BUTTON_LABEL, self.updateUser))
+        buttonsLayout.addWidget(self.addButton(REMOVE_USER_BUTTON_LABEL, self.removeUser))
+        buttonsLayout.addWidget(self.addButton(SEARCH_USER_BUTTON_LABEL, self.search_users))
+
+        # Add the horizontal layout to the main layout
+        self.layout.addLayout(buttonsLayout)
+
+        self.addTable(4, self.table_headers)
+
         self.loadUsersTable()
 
     def loadUsersTable(self):
