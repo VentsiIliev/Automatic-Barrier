@@ -1,4 +1,4 @@
-from model.Vehicle import Vehicle
+from control_panel.model.Vehicle import Vehicle
 from model.access_events.AccessLevel import AccessLevel
 from repositories.csv_repositories.Constants import WHITELISTED_VEHICLES_FIELDS, REGISTRATION_NUMBER, OWNER, ACCESS_LEVEL
 from repositories.csv_repositories.BaseCSVRepository import BaseCSVRepository

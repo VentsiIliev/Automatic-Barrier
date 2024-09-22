@@ -1,16 +1,13 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QPushButton,
-                             QStackedWidget, QLabel, QHBoxLayout, QFrame, QToolBar,
-                             QStatusBar, QMainWindow, QAction, QLineEdit, QTableWidget,
-                             QTableWidgetItem, QComboBox, QDateEdit, QDateTimeEdit, QGridLayout, QDialog, QMessageBox)
-from PyQt5.QtCore import Qt, QDate
+                             QStackedWidget, QHBoxLayout, QFrame, QToolBar,
+                             QStatusBar, QMainWindow, QAction, QDialog, QMessageBox)
+from PyQt5.QtCore import Qt
 
-from control_panel.BarrierControlLayout import BarrierControlPanel
-from control_panel.DashboardLayout import DashboardLayout
-from control_panel.ReportsLayout import ReportsLayout
-from control_panel.SystemSettingsLayout import SystemSettingsPanel
+from control_panel.view.DashboardLayout import DashboardLayout
+from control_panel.view.ReportsLayout import ReportsLayout
 from control_panel.view.LoginDialog import LoginDialog
-from control_panel.UserManagementLayout import UserManagementLayout  # Import the new layout
+from control_panel.view.UserManagementLayout import UserManagementLayout  # Import the new layout
 
 
 class ControlPanel(QMainWindow):
@@ -24,7 +21,7 @@ class ControlPanel(QMainWindow):
         self.setGeometry(100, 100, 1200, 800)  # Main window size
 
         # Check for login at the start
-        # self.check_login()
+        self.check_login()
 
         # Main container widget
         self.centralWidget = QWidget()
@@ -38,8 +35,7 @@ class ControlPanel(QMainWindow):
 
         # Creating multiple layouts (simulating different pages in the control panel)
         self.createDashboardLayout()
-        self.createBarrierControlLayout()
-        self.createSystemSettingsLayout()
+        # self.createBarrierControlLayout()
         self.createReportsLayout()  # Adding the Reports Layout
         self.createUserManagementLayout()  # Adding the User Management Layout
 
@@ -71,11 +67,6 @@ class ControlPanel(QMainWindow):
         self.barrierControlPanel = BarrierControlPanel(self)
         self.stackedWidget.addWidget(self.barrierControlPanel)
 
-    def createSystemSettingsLayout(self):
-        """Create the system settings layout and add it to the stack."""
-        self.systemSettingsPanel = SystemSettingsPanel(self)
-        self.stackedWidget.addWidget(self.systemSettingsPanel)
-
     def createReportsLayout(self):
         """Create the Reports layout for generating and filtering reports."""
         self.reportsPanel = ReportsLayout(self)
@@ -95,8 +86,6 @@ class ControlPanel(QMainWindow):
 
         # Create buttons for switching layouts
         dashboardButton = QPushButton("Dashboard", self)
-        barrierControlButton = QPushButton("Barrier Control", self)
-        systemSettingsButton = QPushButton("System Settings", self)
         reportsButton = QPushButton("Reports", self)
         userManagementButton = QPushButton("User Management", self)  # New button for user management
 
@@ -114,23 +103,16 @@ class ControlPanel(QMainWindow):
         """
 
         dashboardButton.setStyleSheet(buttonStyle)
-        barrierControlButton.setStyleSheet(buttonStyle)
-        systemSettingsButton.setStyleSheet(buttonStyle)
         reportsButton.setStyleSheet(buttonStyle)
         userManagementButton.setStyleSheet(buttonStyle)  # Style for new button
 
         # Connect buttons to layout switches
         dashboardButton.clicked.connect(lambda: self.switchLayout(0))
-        barrierControlButton.clicked.connect(lambda: self.switchLayout(1))
-        systemSettingsButton.clicked.connect(lambda: self.switchLayout(2))
-        reportsButton.clicked.connect(lambda: self.switchLayout(3))
-        userManagementButton.clicked.connect(lambda: self.switchLayout(4))  # Connect to user management layout
+        reportsButton.clicked.connect(lambda: self.switchLayout(1))
+        userManagementButton.clicked.connect(lambda: self.switchLayout(2))  # Connect to user management layout
 
         # Add buttons to sidebar layout
         sidebarLayout.addWidget(dashboardButton)
-        sidebarLayout.addWidget(barrierControlButton)
-        if self.logged_in_user == 'admin':  # Only add the system settings button if the user is an admin
-            sidebarLayout.addWidget(systemSettingsButton)
         sidebarLayout.addWidget(reportsButton)
         sidebarLayout.addWidget(userManagementButton)  # Add user management button
 
@@ -144,32 +126,32 @@ class ControlPanel(QMainWindow):
         toolbar = QToolBar("Quick Actions", self)
         self.addToolBar(Qt.TopToolBarArea, toolbar)
 
-        openAction = QAction("Open Barrier", self)
-        openAction.triggered.connect(lambda: self.statusBar.showMessage("Opening barrier..."))
-
-        closeAction = QAction("Close Barrier", self)
-        closeAction.triggered.connect(lambda: self.statusBar.showMessage("Closing barrier..."))
-
-        settingsAction = QAction("Settings", self)
-        settingsAction.triggered.connect(lambda: self.switchLayout(2))
-
         # Logout Action
         logoutAction = QAction("Logout", self)
         logoutAction.triggered.connect(self.logout)
 
-        # Add actions to the toolbar
-        toolbar.addAction(openAction)
-        toolbar.addAction(closeAction)
-        toolbar.addAction(settingsAction)
+        # Add logout action to the toolbar
         toolbar.addAction(logoutAction)
 
     def logout(self):
         """Logs the user out and returns to the login screen."""
-        self.logged_in_user = None  # Clear the current user
-        self.statusBar.showMessage("Logged out.")
-        self.check_login()  # Prompt for login again
-        self.statusBar.showMessage(f"Logged in as: {self.logged_in_user}")
+        reply = QMessageBox.question(self, 'Confirm Logout',
+                                     "Are you sure you want to log out?",
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        if reply == QMessageBox.Yes:
+            self.logged_in_user = None  # Clear the current user
+            self.statusBar.showMessage("Logged out.")
+            self.check_login()  # Prompt for login again
+            self.statusBar.showMessage(f"Logged in as: {self.logged_in_user}")
 
     def switchLayout(self, index):
         """Switch to a specific layout in the stacked widget."""
         self.stackedWidget.setCurrentIndex(index)
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = ControlPanel()
+    window.show()
+    sys.exit(app.exec_())

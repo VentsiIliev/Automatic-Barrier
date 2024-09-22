@@ -1,8 +1,6 @@
 
-
-
 class LicensePlate:
-    def __init__(self, reg_text, plate_score,license_plate_text_score, plate_region_image):
+    def __init__(self, reg_text, plate_score ,license_plate_text_score, plate_region_image):
         self.reg_text = reg_text
         self.score = plate_score
         self.license_plate_text_score = license_plate_text_score

@@ -1,6 +1,6 @@
 import traceback
 
-from model.User import User
+from control_panel.model.User import User
 from repositories.csv_repositories.BaseCSVRepository import BaseCSVRepository
 from repositories.csv_repositories.Constants import USER_FIELDS, USER, PASSWORD, EMAIL, ROLE
 

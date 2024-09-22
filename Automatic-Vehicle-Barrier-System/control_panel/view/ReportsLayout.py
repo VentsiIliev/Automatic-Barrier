@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QHBoxLayout, QLabel
 
-from control_panel.BaseTableLayout import BaseLayout
+from control_panel.view.BaseTableLayout import BaseLayout
 from control_panel.data_managment.Filter import Filter
 
 LAYOUT_TITLE = "Reports"

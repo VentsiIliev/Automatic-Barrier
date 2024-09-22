@@ -1,13 +1,14 @@
 from PyQt5.QtWidgets import QLabel, QMessageBox, QHBoxLayout
 
 from API.SingletonDatabase import SingletonDatabase
-from control_panel.BaseTableLayout import BaseLayout
+from control_panel.view.BaseTableLayout import BaseLayout
 from control_panel.data_managment.Filter import Filter
-from model.Vehicle import Vehicle
+from control_panel.model.Vehicle import Vehicle
 from model.access_events.AccessLevel import AccessLevel
 
 # Constants for Layout and Titles
-DASHBOARD_TITLE = "Dashboard - Manage Whitelisted Vehicles"
+TABLE_HEADERS = ["Registration", "Access Level", "Owner"]
+LAYOUT_TITLE = "Dashboard - Manage Whitelisted Vehicles"
 WHITELISTED_VEHICLES_LABEL = "Whitelisted Vehicles"
 VEHICLE_REGISTRATION_LABEL = "Vehicle Registration:"
 ACCESS_LEVEL_LABEL = "Access Level:"
@@ -32,9 +33,10 @@ CONFIRM_DELETE_MESSAGE = "Are you sure you want to remove vehicle {}?"
 
 class DashboardLayout(BaseLayout):
     def __init__(self, parent=None):
-        super().__init__(DASHBOARD_TITLE, ["Registration", "Access Level", "Owner"], parent)
+        super().__init__(LAYOUT_TITLE, TABLE_HEADERS, parent)
         self.selected_vehicle = None  # Track the currently selected vehicle
         self.initUI()
+
 
     def initUI(self):
         """Initialize the dashboard layout."""
@@ -97,7 +99,10 @@ class DashboardLayout(BaseLayout):
 
         self.layout.addLayout(searchLayout)
 
-        self.addTable(3, ["Registration", "Access Level", "Owner"])
+        self.addTable(3, TABLE_HEADERS)
+
+        # Connect row selection to the handler
+        self.table.itemSelectionChanged.connect(self.on_vehicle_selected)
 
         # Load whitelisted vehicles into the table
         self.loadVehicleTable()
@@ -114,7 +119,8 @@ class DashboardLayout(BaseLayout):
         selected_row = self.table.currentRow()
 
         if selected_row >= 0:
-            self.selected_vehicle = self.table.item(selected_row, 0).text()  # Store selected registration number
+            # Store selected registration number
+            self.selected_vehicle = self.table.item(selected_row, 0).text()
 
             # Populate input fields with the selected vehicle's details
             self.addVehicleInput.setText(self.table.item(selected_row, 0).text())  # Registration
@@ -123,6 +129,14 @@ class DashboardLayout(BaseLayout):
 
             # Populate the remove vehicle field
             self.removeVehicleInput.setText(self.table.item(selected_row, 0).text())  # Registration for removal
+        else:
+            # Clear the input fields if no vehicle is selected
+            self.selected_vehicle = None
+            self.addVehicleInput.clear()
+            self.addAccessLevelInput.setCurrentIndex(0)  # Reset access level to default
+            self.addOwnerInput.clear()
+            self.removeVehicleInput.clear()
+
 
     def updateVehicle(self):
         """Update the selected vehicle's information."""

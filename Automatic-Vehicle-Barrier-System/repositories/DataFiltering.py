@@ -48,14 +48,14 @@ def filterByRole(data, role):
     """
     Filter data by role.
     """
-    return data[data['role'] == role]
+    return data[data['Role'] == role]
 
 
 def filterByEmail(data, email):
     """
     Filter data by email.
     """
-    return data[data['email'].str.upper() == email.upper()]
+    return data[data['Email'].str.upper() == email.upper()]
 
 
 def filterByAccessLevel(data, value):

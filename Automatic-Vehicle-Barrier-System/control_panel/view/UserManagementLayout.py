@@ -4,9 +4,9 @@ from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QLabel, QHBoxLayout
 
 from API.SingletonDatabase import SingletonDatabase
 from control_panel import Validations
-from control_panel.BaseTableLayout import BaseLayout
+from control_panel.view.BaseTableLayout import BaseLayout
 from control_panel.data_managment.Filter import Filter
-from model.User import User
+from control_panel.model.User import User
 
 # Constants for Layout and Table
 LAYOUT_TITLE = "User Management"
@@ -82,8 +82,13 @@ class UserManagementLayout(BaseLayout):
         # Add the horizontal layout to the main layout
         self.layout.addLayout(buttonsLayout)
 
+        # Add table to the layout
         self.addTable(4, self.table_headers)
 
+        # Connect row selection to the handler
+        self.table.itemSelectionChanged.connect(self.on_user_selected)
+
+        # Load users into the table
         self.loadUsersTable()
 
     def loadUsersTable(self):
@@ -97,6 +102,20 @@ class UserManagementLayout(BaseLayout):
             self.table.setItem(rowPosition, 1, QTableWidgetItem(user.password))
             self.table.setItem(rowPosition, 2, QTableWidgetItem(user.role))
             self.table.setItem(rowPosition, 3, QTableWidgetItem(user.email))
+
+    def on_user_selected(self):
+        """Handle user selection from the table and populate the input fields."""
+        selected_row = self.table.currentRow()
+
+        if selected_row >= 0:
+            # Populate the input fields with the selected user data
+            self.usernameInput.setText(self.table.item(selected_row, 0).text())  # Username
+            self.passwordInput.setText(self.table.item(selected_row, 1).text())  # Password
+            self.roleInput.setCurrentText(self.table.item(selected_row, 2).text())  # Role
+            self.emailInput.setText(self.table.item(selected_row, 3).text())  # Email
+        else:
+            # Clear the input fields if no user is selected
+            self.clearInputs()
 
     def addUser(self):
         username = self.usernameInput.text()
@@ -125,13 +144,10 @@ class UserManagementLayout(BaseLayout):
             repo = SingletonDatabase().getInstance().get_repo('users')
             repo.insert(user)
         except Exception as e:
-            QMessageBox.critical(self, ERROR_TITLE,str(e))
-            traceback.print_exc()
-        try:
-            self.loadUsersTable()
-        except Exception as e:
             QMessageBox.critical(self, ERROR_TITLE, str(e))
             traceback.print_exc()
+
+        self.loadUsersTable()
         self.clearInputs()
 
     def updateUser(self):
@@ -155,8 +171,13 @@ class UserManagementLayout(BaseLayout):
             QMessageBox.warning(self, INPUT_ERROR_TITLE, WARNING_MESSAGE_ENTER_ALL_FIELDS)
             return
 
-        repo = SingletonDatabase().getInstance().get_repo('users')
-        repo.update(username, password, email, role)
+        try:
+            repo = SingletonDatabase().getInstance().get_repo('users')
+            repo.update(username, password, email, role)
+        except Exception as e:
+            QMessageBox.critical(self, ERROR_TITLE, str(e))
+            traceback.print_exc()
+
         self.loadUsersTable()
         self.clearInputs()
 
@@ -167,8 +188,13 @@ class UserManagementLayout(BaseLayout):
             return
 
         username = self.table.item(selected_row, 0).text()
-        repo = SingletonDatabase().getInstance().get_repo('users')
-        repo.delete(username)
+        try:
+            repo = SingletonDatabase().getInstance().get_repo('users')
+            repo.delete(username)
+        except Exception as e:
+            QMessageBox.critical(self, ERROR_TITLE, str(e))
+            traceback.print_exc()
+
         self.loadUsersTable()
 
     def create_user_filters(self):

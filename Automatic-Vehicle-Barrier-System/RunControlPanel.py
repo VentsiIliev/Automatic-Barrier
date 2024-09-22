@@ -2,7 +2,7 @@ import sys
 
 from PyQt5.QtWidgets import QApplication
 
-from control_panel.ControlPanel import ControlPanel
+from control_panel.view.ControlPanel import ControlPanel
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
