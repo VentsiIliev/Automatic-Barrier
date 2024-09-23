@@ -37,18 +37,18 @@ class Database:
         else:
             raise ValueError(f"Invalid repository specified.{repo}")
 
-    def get_data(self, repo, filters=None):
-        """Retrieve data from the specified repository."""
-        if repo == 'granted':
-            return self.access_granted_repo.get(filters)
-        elif repo == 'denied':
-            return self.access_denied_repo.get(filters)
-        elif repo == 'vehicles':
-            return self.vehicles_on_premises_repo.get_all()
-        elif repo == 'whitelisted':
-            return self.whitelisted_vehicles_repo.get(filters)
-        else:
-            raise ValueError("Invalid repository specified.")
+    # def get_data(self, repo, filters=None):
+    #     """Retrieve data from the specified repository."""
+    #     if repo == 'granted':
+    #         return self.access_granted_repo.get(filters)
+    #     elif repo == 'denied':
+    #         return self.access_denied_repo.get(filters)
+    #     elif repo == 'vehicles':
+    #         return self.vehicles_on_premises_repo.get_all()
+    #     elif repo == 'whitelisted':
+    #         return self.whitelisted_vehicles_repo.get(filters)
+    #     else:
+    #         raise ValueError("Invalid repository specified.")
 
     def log_event(self, event):
         """Log the event to the appropriate repository."""

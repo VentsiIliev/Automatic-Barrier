@@ -1,6 +1,7 @@
 import csv
 from datetime import datetime
 
+from shared.CSVFileName import CSVFileName
 from shared.SingletonDatabase import SingletonDatabase
 from core_system.model.access_events.AccessLevel import AccessLevel
 
@@ -48,7 +49,7 @@ class AccessControl:
 
     def check_access(self, registration_number):
         """Check if the registration number and access level are in the whitelist."""
-        vehicles = SingletonDatabase().getInstance().get_repo('whitelisted').get_all()
+        vehicles = SingletonDatabase().getInstance().get_repo(CSVFileName.WHITELISTED_VEHICLES.strip_extension()).get_all()
         vechicle = None
         for entry in vehicles:
             if entry.registration_number == registration_number:

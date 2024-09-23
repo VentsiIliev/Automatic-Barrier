@@ -1,8 +1,8 @@
 import json
 import os
 
-from core_system.config.Settings import Settings
-from core_system.config.SystemSetting import SystemSetting
+from core_system.config.settings.Settings import Settings
+from core_system.config.settings.SystemSetting import SystemSetting
 
 # File paths
 SYSTEM_SETTINGS_PATH = 'core_system/config/system_settings.json'

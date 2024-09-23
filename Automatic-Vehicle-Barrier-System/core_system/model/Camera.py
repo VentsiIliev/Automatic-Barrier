@@ -12,7 +12,7 @@
 import cv2
 import numpy as np  # Import numpy
 
-from core_system.config.CameraSetting import CameraSetting
+from core_system.config.settings.CameraSetting import CameraSetting
 
 
 class Camera:
@@ -43,8 +43,6 @@ class Camera:
             height (int): The height of the camera feed.
         """
         self.setCameraIndex(settings[CameraSetting.INDEX.value])
-        # self.setCameraIndex(0)
-        print(f"camera index: {settings[CameraSetting.INDEX.value]}")
         self.setWidth(int(settings[CameraSetting.WIDTH.value]))
         self.setHeight(int(settings[CameraSetting.HEIGHT.value]))
 

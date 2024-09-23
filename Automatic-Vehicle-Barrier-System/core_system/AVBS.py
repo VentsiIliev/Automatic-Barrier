@@ -10,8 +10,8 @@ from core_system.API.LicensePlateRecognizer import LicensePlateRecognizer
 from shared.SingletonDatabase import SingletonDatabase
 from core_system.API.VehicleDetection import VehicleDetection
 from core_system.view.AVBSWindow.AVBSWindow import AVBSWindow
-from core_system.config.SystemSetting import SystemSetting
-from core_system.config.SettingsManager import SettingsManager
+from core_system.config.settings.SystemSetting import SystemSetting
+from core_system.config.settings.SettingsManager import SettingsManager
 from core_system.model.Barrier import Barrier
 from core_system.model.Camera import Camera
 from core_system.model.LicencePlateDetector import LicencePlateDetector

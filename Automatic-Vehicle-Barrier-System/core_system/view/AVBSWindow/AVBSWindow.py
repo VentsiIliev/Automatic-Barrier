@@ -1,16 +1,26 @@
 import sys
+import time
+import traceback
+
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QVBoxLayout, QHBoxLayout, QFrame, QPushButton, QGridLayout, \
     QToolBar, QAction, QMainWindow, QSizePolicy, QCheckBox, QSpacerItem
-from PyQt5.QtGui import QImage, QPixmap, QFont, QIcon
+from PyQt5.QtGui import QImage, QPixmap, QFont
 from PyQt5.QtCore import Qt
 
+from core_system.view.settings_window.SettingsWindow import SettingsWindow
+
+
 class AVBSWindow(QMainWindow):
+    WINDOW_TITLE = "AVBS - Automated Vehicle Barrier System"
+    SYSTEM_STATUS_ONLINE = "System Online"
+    SYSTEM_STATUS_OFFLINE = "System Offline"
     def __init__(self, barrier_control):
         super().__init__()
         self.barrier_control = barrier_control
+        self.last_frame_time = time.time()
 
         # Setup the window
-        self.setWindowTitle("AVBS - Automated Vehicle Barrier System")
+        self.setWindowTitle(self.WINDOW_TITLE)
         self.setStyleSheet("background-color: #f9f9f9; color: #4c4c4c;")
         self.setGeometry(100, 100, 1280, 720)
 
@@ -22,7 +32,7 @@ class AVBSWindow(QMainWindow):
         main_layout = QVBoxLayout()
 
         # Add a status bar
-        self.statusBar().showMessage("System Online")
+        self.statusBar().showMessage(self.SYSTEM_STATUS_ONLINE)
 
         # Quick Access Toolbar
         self.create_quick_access_toolbar()
@@ -84,7 +94,15 @@ class AVBSWindow(QMainWindow):
 
     def open_settings(self):
         print("Open settings clicked")
-        # Code to open settings dialog can be added here
+        # settings_window = SettingsWindow(self.settings_manager)
+        try:
+            settings_window = SettingsWindow()
+            settings_window.exec_()
+        except Exception as e:
+            traceback.print_exc()
+            print("Failed to open settings window:", e)
+
+
 
     def view_logs(self):
         print("View logs clicked")
@@ -120,7 +138,8 @@ class AVBSWindow(QMainWindow):
             'Timestamp': 'N/A',
             'License Plate': 'N/A',
             'Direction': 'N/A',
-            'Vehicles on Premises': '0'
+            'Vehicles on Premises': '0',
+            'Camera FPS': '0 FPS'  # Added FPS label
         }
         self.info_labels = {}
 
@@ -204,8 +223,17 @@ class AVBSWindow(QMainWindow):
         sys.exit(1)
 
     def update_camera_feed(self, frame):
-        """Updates the camera feed QLabel with the given frame"""
+        """Updates the camera feed QLabel with the given frame and updates the FPS display."""
         if frame is not None:
+            # Calculate FPS
+            current_time = time.time()
+            fps = 1.0 / (current_time - self.last_frame_time)
+            self.last_frame_time = current_time
+
+            # Update FPS in the info panel
+            self.info_labels['Camera FPS'].setText(f"{fps:.2f} FPS")
+
+            # Update the camera feed display
             height, width, channel = frame.shape
             bytes_per_line = 3 * width
             q_image = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
@@ -222,8 +250,10 @@ class AVBSWindow(QMainWindow):
 
             vehicle_height, vehicle_width, _ = vehicle_image.shape
             vehicle_bytes = vehicle_image.tobytes()
-            vehicle_qimage = QImage(vehicle_bytes, vehicle_width, vehicle_height, vehicle_width * 3, QImage.Format_RGB888).rgbSwapped()
-            self.vehicle_image_label.setPixmap(QPixmap.fromImage(vehicle_qimage).scaled(self.vehicle_image_label.size(), Qt.KeepAspectRatio))
+            vehicle_qimage = QImage(vehicle_bytes, vehicle_width, vehicle_height, vehicle_width * 3,
+                                    QImage.Format_RGB888).rgbSwapped()
+            self.vehicle_image_label.setPixmap(
+                QPixmap.fromImage(vehicle_qimage).scaled(self.vehicle_image_label.size(), Qt.KeepAspectRatio))
 
     def closeEvent(self, event):
         self.barrier_control.stop()
