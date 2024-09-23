@@ -14,7 +14,6 @@ class CSVUsersRepository(BaseCSVRepository):
         df = self._read_rows()
 
         if df.empty:
-            print("No users found in the CSV.")
             return users
 
         for _, row in df.iterrows():
@@ -40,7 +39,6 @@ class CSVUsersRepository(BaseCSVRepository):
         return None  # Return None if user is not found
 
     def insert(self, user):
-        print("Inserting user")
         try:
             if self.get(user.username) is None:  # Check by username
                 super().insert(**{USER: user.username, PASSWORD: user.password, EMAIL: user.email, ROLE: user.role})
@@ -52,7 +50,6 @@ class CSVUsersRepository(BaseCSVRepository):
 
     def update(self, rows):
         """Update users with the provided list of user data."""
-        print("Updating users")
         current_rows = self._read_rows()
         for row in current_rows:
             for updated_user in rows:
@@ -61,23 +58,6 @@ class CSVUsersRepository(BaseCSVRepository):
                     row[EMAIL] = updated_user[EMAIL]
                     row[ROLE] = updated_user[ROLE]
         super().update(current_rows)
-
-    # def get_data(self, filters=None):
-    #     users = []
-    #     data = super().get_data(filters)
-    #
-    #     # Skip the first row (header) using .iloc
-    #     for index, row in data.iloc[1:].iterrows():  # Start from the second row
-    #         print("row", row)
-    #         user = User(
-    #             username=row[USER],
-    #             password=row[PASSWORD],
-    #             email=row[EMAIL],
-    #             role=row[ROLE]
-    #         )
-    #         users.append(user)
-    #
-    #     return users
 
     def get_data(self, filters=None):
         """Retrieve filtered data based on given criteria."""

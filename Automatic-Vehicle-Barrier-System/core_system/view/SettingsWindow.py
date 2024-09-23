@@ -10,14 +10,14 @@ class SettingsWindow(QDialog):
         super().__init__()
 
         # Setup the settings window
-        self.setWindowTitle("Settings")
+        self.setWindowTitle("settings")
         self.setStyleSheet("background-color: #f9f9f9; color: #4c4c4c;")
         self.setGeometry(200, 200, 400, 500)  # Adjust height for extra tabs
 
         layout = QVBoxLayout()
 
         # Header
-        header = QLabel("Settings")
+        header = QLabel("settings")
         header.setFont(QFont("Arial", 22, QFont.Bold))
         header.setAlignment(Qt.AlignCenter)
         layout.addWidget(header)
@@ -31,11 +31,11 @@ class SettingsWindow(QDialog):
         self.database_tab = self.create_database_tab()  # Add Database tab
 
         # Add tabs to the tab widget
-        self.tab_widget.addTab(self.camera_settings_tab, "Camera Settings")
-        self.tab_widget.addTab(self.system_settings_tab, "System Settings")
-        self.tab_widget.addTab(self.datetime_settings_tab, "Date & Time Settings")
+        self.tab_widget.addTab(self.camera_settings_tab, "Camera settings")
+        self.tab_widget.addTab(self.system_settings_tab, "System settings")
+        self.tab_widget.addTab(self.datetime_settings_tab, "Date & Time settings")
         self.tab_widget.addTab(self.access_control_tab, "Access Control")
-        self.tab_widget.addTab(self.database_tab, "Database Settings")  # Add Database tab
+        self.tab_widget.addTab(self.database_tab, "Database settings")  # Add Database tab
 
         layout.addWidget(self.tab_widget)
 
@@ -53,7 +53,7 @@ class SettingsWindow(QDialog):
         self.setLayout(layout)
 
     def create_camera_settings_tab(self):
-        """Create the Camera Settings tab"""
+        """Create the Camera settings tab"""
         camera_tab = QWidget()
         camera_layout = QVBoxLayout()
 
@@ -82,7 +82,7 @@ class SettingsWindow(QDialog):
         return camera_tab
 
     def create_system_settings_tab(self):
-        """Create the System Settings tab"""
+        """Create the System settings tab"""
         system_tab = QWidget()
         system_layout = QVBoxLayout()
 
@@ -101,7 +101,7 @@ class SettingsWindow(QDialog):
         return system_tab
 
     def create_datetime_settings_tab(self):
-        """Create the Date & Time Settings tab"""
+        """Create the Date & Time settings tab"""
         datetime_tab = QWidget()
         datetime_layout = QVBoxLayout()
 
@@ -165,7 +165,7 @@ class SettingsWindow(QDialog):
         return access_tab
 
     def create_database_tab(self):
-        """Create the Database Settings tab"""
+        """Create the Database settings tab"""
         database_tab = QWidget()
         database_layout = QVBoxLayout()
 
@@ -200,7 +200,7 @@ class SettingsWindow(QDialog):
         db_type = self.db_type_combo.currentText()
 
         if db_type == "CSV":
-            # CSV Settings
+            # CSV settings
             csv_file_layout = QHBoxLayout()
             csv_file_label = QLabel("CSV File Path:")
             self.csv_file_input = QLineEdit("path/to/your/file.csv")  # Default value
@@ -216,7 +216,7 @@ class SettingsWindow(QDialog):
             self.database_input_layout.addLayout(delimiter_layout)
 
         elif db_type in ["SQLite", "MySQL", "PostgreSQL"]:
-            # SQL Database Settings
+            # SQL Database settings
             connection_string_layout = QHBoxLayout()
             connection_string_label = QLabel("Connection String:")
             self.connection_string_input = QLineEdit("localhost:3306/mydatabase")  # Default value
@@ -234,7 +234,7 @@ class SettingsWindow(QDialog):
         self.database_input_layout.addWidget(self.test_connection_button)
 
     def create_database_tab(self):
-        """Create the Database Settings tab"""
+        """Create the Database settings tab"""
         database_tab = QWidget()
         database_layout = QVBoxLayout()
 
@@ -269,7 +269,7 @@ class SettingsWindow(QDialog):
         db_type = self.db_type_combo.currentText()
 
         if db_type == "CSV":
-            # CSV Settings
+            # CSV settings
             csv_file_layout = QHBoxLayout()
             csv_file_label = QLabel("CSV File Path:")
             self.csv_file_input = QLineEdit("path/to/your/file.csv")  # Default value
@@ -285,7 +285,7 @@ class SettingsWindow(QDialog):
             self.database_input_layout.addLayout(delimiter_layout)
 
         elif db_type in ["SQLite", "MySQL", "PostgreSQL"]:
-            # SQL Database Settings
+            # SQL Database settings
             connection_string_layout = QHBoxLayout()
             connection_string_label = QLabel("Connection String:")
             self.connection_string_input = QLineEdit("localhost:3306/mydatabase")  # Default value
@@ -331,7 +331,7 @@ class SettingsWindow(QDialog):
         workday_start_time = self.workday_start_time_input.time().toString()
         workday_end_time = self.workday_end_time_input.time().toString()
 
-        print(f"Settings saved: Camera Index - {camera_index}, Resolution - {resolution}, Brightness Control - {brightness_control_enabled}")
+        print(f"settings saved: Camera Index - {camera_index}, Resolution - {resolution}, Brightness Control - {brightness_control_enabled}")
         print(f"Date Format - {date_format}, Time Format - {time_format}")
         print(f"Access Control - {enforce_access_control}, Working Hours - {working_hours}, Start Time - {workday_start_time}, End Time - {workday_end_time}")
         self.accept()

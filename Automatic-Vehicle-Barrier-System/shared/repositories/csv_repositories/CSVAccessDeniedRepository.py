@@ -1,6 +1,8 @@
 from shared.AccessEvent import AccessEvent
 from shared.repositories.csv_repositories.BaseCSVRepository import BaseCSVRepository
-from shared.repositories.csv_repositories.Constants import ACCESS_DENIED_FIELDS, EVENT_TYPE, DATE, TIME, REGISTRATION_NUMBER, DIRECTION, OWNER
+from shared.repositories.csv_repositories.Constants import ACCESS_DENIED_FIELDS, EVENT_TYPE, DATE, TIME, \
+    REGISTRATION_NUMBER, DIRECTION, OWNER
+
 
 class CSVAccessDeniedRepository(BaseCSVRepository):
     def __init__(self, file_path):

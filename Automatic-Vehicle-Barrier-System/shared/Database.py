@@ -1,7 +1,8 @@
 import os
 
-from admin_dashboard.Settings import Settings
+from admin_dashboard.settings import Settings
 from shared.AccessEventType import AccessEventType
+from shared.CSVFileName import CSVFileName
 from shared.repositories.csv_repositories.CSVAccessDeniedRepository import CSVAccessDeniedRepository
 from shared.repositories.csv_repositories.CSVAccessGrantedRepository import CSVAccessGrantedRepository
 from shared.repositories.csv_repositories.CSVVehiclesOnPremisesRepository import CSVVehiclesOnPremisesRepository
@@ -10,43 +11,31 @@ from shared.repositories.csv_repositories.CSVUsersRepository import CSVUsersRepo
 
 
 class Database:
+    """A class to manage the database and repositories."""
+    DATABASE_DIRECTORY = "database"
+
     def __init__(self, db_name):
         self.db_name = db_name
-        self.access_denied_repo = CSVAccessDeniedRepository(os.path.join("database\\access_denied.csv"))
-        self.access_granted_repo = CSVAccessGrantedRepository(os.path.join("database\\access_granted.csv"))
-        self.vehicles_on_premises_repo = CSVVehiclesOnPremisesRepository(os.path.join("database"
-                                                                                      "\\vehicles_on_premises.csv"))
-        self.whitelisted_vehicles_repo = CSVWhitelistedVehiclesRepository(os.path.join("database"
-                                                                                       "\\whitelisted_vehicles.csv"))
-        self.users_repo = CSVUsersRepository(os.path.join("database\\users.csv"))
+        self.access_denied_repo = CSVAccessDeniedRepository(os.path.join(f"{self.DATABASE_DIRECTORY}\\{CSVFileName.ACCESS_DENIED.value}"))
+        self.access_granted_repo = CSVAccessGrantedRepository(os.path.join(f"{self.DATABASE_DIRECTORY}\\{CSVFileName.ACCESS_GRANTED.value}"))
+        self.vehicles_on_premises_repo = CSVVehiclesOnPremisesRepository(os.path.join(f"{self.DATABASE_DIRECTORY}\\{CSVFileName.VEHICLES_ON_PREMISES.value}"))
+        self.whitelisted_vehicles_repo = CSVWhitelistedVehiclesRepository(os.path.join(f"{self.DATABASE_DIRECTORY}\\{CSVFileName.WHITELISTED_VEHICLES.value}"))
+        self.users_repo = CSVUsersRepository(os.path.join(f"{self.DATABASE_DIRECTORY}\\{CSVFileName.USERS.value}"))
 
     def get_repo(self, repo):
         """Return the repository object for the specified repository."""
-        if repo == Settings.ACCESS_GRANTED_CSV:
+        if repo == CSVFileName.ACCESS_GRANTED.strip_extension():
             return self.access_granted_repo
-        elif repo == Settings.ACCESS_DENIED_CSV:
+        elif repo == CSVFileName.ACCESS_DENIED.strip_extension():
             return self.access_denied_repo
-        elif repo == Settings.VEHICLES_CSV:
+        elif repo == CSVFileName.VEHICLES_ON_PREMISES.strip_extension():
             return self.vehicles_on_premises_repo
-        elif repo == Settings.WHITELISTED_CSV:
+        elif repo == CSVFileName.WHITELISTED_VEHICLES.strip_extension():
             return self.whitelisted_vehicles_repo
-        elif repo == Settings.USERS_CSV:
+        elif repo == CSVFileName.USERS.strip_extension():
             return self.users_repo
         else:
             raise ValueError(f"Invalid repository specified.{repo}")
-
-    # def get_data(self, query, repo):
-    #     """Retrieve data from the specified repository."""
-    #     if repo == 'granted':
-    #         return self.access_granted_repo.get(query)
-    #     elif repo == 'denied':
-    #         return self.access_denied_repo.get(query)
-    #     elif repo == 'vehicles':
-    #         return self.vehicles_on_premises_repo.get_all()
-    #     elif repo == 'whitelisted':
-    #         return self.whitelisted_vehicles_repo.get(query)
-    #     else:
-    #         raise ValueError("Invalid repository specified.")
 
     def get_data(self, repo, filters=None):
         """Retrieve data from the specified repository."""

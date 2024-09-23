@@ -24,7 +24,6 @@ class CSVWhitelistedVehiclesRepository(BaseCSVRepository):
         return None
 
     def insert(self, vehicle):
-        print("Inserting vehicle")
         if self.get(vehicle.registration_number) is None:
             super().insert(
                 **{
@@ -38,7 +37,6 @@ class CSVWhitelistedVehiclesRepository(BaseCSVRepository):
         super().delete(registration_number)
 
     def update(self, vehicle: Vehicle):
-        print("Updating")
         df = self._read_rows()
         df.loc[df[REGISTRATION_NUMBER] == vehicle.registration_number, [OWNER, ACCESS_LEVEL]] = vehicle.owner, vehicle.access_level
         self._write_rows(df)

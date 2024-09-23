@@ -1,13 +1,20 @@
 from PyQt5.QtWidgets import QHBoxLayout, QLabel
 
-from admin_dashboard.Settings import Settings
+from admin_dashboard.settings import Settings
 from admin_dashboard.data_managment.ReportType import ReportType
 from admin_dashboard.view.BaseTableLayout import BaseLayout
 from admin_dashboard.data_managment.Filter import Filter
+from shared.CSVFileName import CSVFileName
 
 LAYOUT_TITLE = "Reports"
-CSV_FILE_ACCESS_GRANTED = Settings.ACCESS_GRANTED_CSV
-CSV_FILE_ACCESS_DENIED = Settings.ACCESS_DENIED_CSV
+
+
+class CSVFile:
+    pass
+
+
+CSV_FILE_ACCESS_GRANTED = CSVFileName.ACCESS_GRANTED.strip_extension()
+CSV_FILE_ACCESS_DENIED = CSVFileName.ACCESS_DENIED.strip_extension()
 TABLE_HEADERS = ["Access Status", "Date", "Time", "Registration", "Direction", "Owner"]
 REGISTRATION_INPUT_FIELD_LABEL = "Registration Number"
 FROM_DATE_INPUT_FIELD_LABEL = "From Date"

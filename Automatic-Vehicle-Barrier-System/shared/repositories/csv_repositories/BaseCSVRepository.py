@@ -1,64 +1,81 @@
 import os
 import pandas as pd
+from filelock import FileLock, Timeout
 from shared.repositories import DataFiltering
 from shared.repositories.BaseRepository import BaseRepository
 
+# Define constants for print messages
+LOCK_ACQUIRED_READING = "Lock acquired for reading: {}"
+LOCK_RELEASED = "Lock released for {}"
+LOCK_ACQUIRE_TIMEOUT_READING = "Could not acquire lock for reading: {} within the timeout period."
+LOCK_ACQUIRED_WRITING = "Lock acquired for writing: {}"
+LOCK_ACQUIRE_TIMEOUT_WRITING = "Could not acquire lock for writing: {} within the timeout period."
 
 class BaseCSVRepository(BaseRepository):
     def __init__(self, file_path, fieldnames):
         self.file_path = file_path
         self.fieldnames = fieldnames
+        self.lock_path = f"{file_path}.lock"  # Path for the lock file
         self._ensure_file_exists()
 
     def _ensure_file_exists(self):
-        if not os.path.exists(self.file_path):
-            print("Creating file", self.file_path)
-            pd.DataFrame(columns=self.fieldnames).to_csv(self.file_path, index=False)
+        """Ensure the CSV file exists, creating it if it does not."""
+        with FileLock(self.lock_path, timeout=10):  # Timeout added
+            if not os.path.exists(self.file_path):
+                print("Creating file", self.file_path)
+                pd.DataFrame(columns=self.fieldnames).to_csv(self.file_path, index=False)
 
     def _read_rows(self):
-        print(f"Reading rows from: {self.file_path}")
-        df = pd.read_csv(self.file_path)
-        return df
+        """Read rows from the CSV file with a file lock."""
+        try:
+            with FileLock(self.lock_path, timeout=10):
+                print(LOCK_ACQUIRED_READING.format(self.file_path))
+                df = pd.read_csv(self.file_path)
+                print(LOCK_RELEASED.format(self.file_path))
+            return df
+        except Timeout:
+            print(LOCK_ACQUIRE_TIMEOUT_READING.format(self.file_path))
+            return pd.DataFrame(columns=self.fieldnames)
 
     def _write_rows(self, df):
-        print(f"Writing rows to: {self.file_path}")
-        df.to_csv(self.file_path, index=False)
+        """Write rows to the CSV file with a file lock."""
+        try:
+            with FileLock(self.lock_path, timeout=10):
+                print(LOCK_ACQUIRED_WRITING.format(self.file_path))
+                df.to_csv(self.file_path, index=False)
+                print(LOCK_RELEASED.format(self.file_path))
+        except Timeout:
+            print(LOCK_ACQUIRE_TIMEOUT_WRITING.format(self.file_path))
 
     def clear(self):
-        """Clear all records (optional)."""
-        pd.DataFrame(columns=self.fieldnames).to_csv(self.file_path, index=False)
+        """Clear all records in the CSV file."""
+        self._write_rows(pd.DataFrame(columns=self.fieldnames))
 
     def get(self, query):
         """Retrieve rows based on a query matching a specific field."""
         df = self._read_rows()
-        result = df[df[self.fieldnames[0]] == query]
-        return result
+        return df[df[self.fieldnames[0]] == query]
 
     def get_data(self, filters=None):
-        """Get data with optional filters."""
+        """Get data from the CSV file, with optional filtering."""
         df = self._read_rows()
-        print("Data read successfully, before filtering:", df)
         if filters:
             df = DataFiltering.filterData(df, filters)
-        print("Data after filtering:", df)
         return df
 
     def insert(self, **kwargs):
-        """Insert a new row with the given keyword arguments."""
-
+        """Insert a new row into the CSV file."""
         df = self._read_rows()
-        print("Existing rows:", df)
         new_row = pd.DataFrame([kwargs])
         df = pd.concat([df, new_row], ignore_index=True)
-        print("New row:", new_row)
         self._write_rows(df)
 
     def delete(self, query):
         """Delete rows matching a specific query."""
-        df = self._read_rows()  # Read rows as DataFrame
-        df = df[df[self.fieldnames[0]] != query]  # Filter out the row(s) to delete
-        self._write_rows(df)  # Write the updated DataFrame back to CSV
+        df = self._read_rows()
+        df = df[df[self.fieldnames[0]] != query]  # Filter out the rows to delete
+        self._write_rows(df)
 
     def update(self, df):
-        """Update rows with the given DataFrame."""
+        """Update rows by writing the given DataFrame."""
         self._write_rows(df)

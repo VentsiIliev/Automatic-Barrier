@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import QLabel, QMessageBox, QHBoxLayout
 
+from shared.CSVFileName import CSVFileName
 from shared.SingletonDatabase import SingletonDatabase
-from admin_dashboard.Settings import Settings
+from admin_dashboard.settings import Settings
 from admin_dashboard.data_managment.ReportType import ReportType
 from admin_dashboard.view.BaseTableLayout import BaseLayout
 from admin_dashboard.data_managment.Filter import Filter
@@ -9,7 +10,7 @@ from admin_dashboard.model.Vehicle import Vehicle
 from core_system.model.access_events.AccessLevel import AccessLevel
 
 # Constants for Layout and Titles
-CSV_FILE = Settings.WHITELISTED_CSV
+CSV_FILE = CSVFileName.WHITELISTED_VEHICLES.strip_extension()
 TABLE_HEADERS = ["Registration", "Access Level", "Owner"]
 LAYOUT_TITLE = "Dashboard - Manage Whitelisted Vehicles"
 WHITELISTED_VEHICLES_LABEL = "Whitelisted Vehicles"

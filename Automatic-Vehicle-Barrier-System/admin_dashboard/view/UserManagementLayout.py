@@ -2,9 +2,10 @@ import traceback
 
 from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QLabel, QHBoxLayout
 
+from shared.CSVFileName import CSVFileName
 from shared.SingletonDatabase import SingletonDatabase
 from admin_dashboard import Validations
-from admin_dashboard.Settings import Settings
+from admin_dashboard.settings import Settings
 from admin_dashboard.data_managment.ReportType import ReportType
 from admin_dashboard.view.BaseTableLayout import BaseLayout
 from admin_dashboard.data_managment.Filter import Filter
@@ -12,7 +13,7 @@ from admin_dashboard.model.User import User
 
 # Constants for Layout and Table
 LAYOUT_TITLE = "User Management"
-CSV_FILE = Settings.USERS_CSV
+CSV_FILE = CSVFileName.USERS.strip_extension()
 TABLE_HEADERS = ["User", "Password", "Email", "Role"]
 USERNAME_INPUT_FIELD_LABEL = "Username"
 PASSWORD_INPUT_FIELD_LABEL = "Password"

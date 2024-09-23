@@ -1,16 +1,10 @@
 import sys
-import cv2
-import numpy as np
-from datetime import datetime
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QVBoxLayout, QHBoxLayout, QFrame, QPushButton, QGridLayout, \
-    QToolBar, QAction, QMainWindow, QSizePolicy
+    QToolBar, QAction, QMainWindow, QSizePolicy, QCheckBox, QSpacerItem
 from PyQt5.QtGui import QImage, QPixmap, QFont, QIcon
 from PyQt5.QtCore import Qt
 
-from core_system.view.SettingsWindow import SettingsWindow
-
-
-class AVBSWindow(QMainWindow):  # Changed QWidget to QMainWindow
+class AVBSWindow(QMainWindow):
     def __init__(self, barrier_control):
         super().__init__()
         self.barrier_control = barrier_control
@@ -20,137 +14,157 @@ class AVBSWindow(QMainWindow):  # Changed QWidget to QMainWindow
         self.setStyleSheet("background-color: #f9f9f9; color: #4c4c4c;")
         self.setGeometry(100, 100, 1280, 720)
 
+        # State to track manual control
+        self.manual_control_enabled = True  # Default to manual control enabled
+
         # Main widget and layout
-        central_widget = QWidget()  # Central widget for QMainWindow
+        central_widget = QWidget()
         main_layout = QVBoxLayout()
 
-        # Add a toolbar
-        self.create_toolbar()
+        # Add a status bar
+        self.statusBar().showMessage("System Online")
 
-        # Header
-        header = QLabel("Automated Vehicle Barrier System")
-        header.setFont(QFont("Arial", 22, QFont.Bold))
-        header.setAlignment(Qt.AlignCenter)
-        header.setStyleSheet("""
-            color: #ffffff;
-            padding: 15px;
-            background-color: #4c87b9;
-            border-radius: 8px;
-        """)
-        main_layout.addWidget(header)
+        # Quick Access Toolbar
+        self.create_quick_access_toolbar()
 
-        # Horizontal layout for camera feed and info panel
+        # Camera feed and Info Panel
         camera_info_layout = QHBoxLayout()
 
         # Camera feed label (styled with a border and padding)
         self.camera_label = QLabel(self)
         self.camera_label.setFrameShape(QFrame.Box)
         self.camera_label.setStyleSheet("border: 2px solid #4c87b9; padding: 5px; border-radius: 10px;")
-        self.camera_label.setFixedSize(640, 360)  # Set a fixed size for better layout control
+        self.camera_label.setFixedSize(640, 360)  # Fixed size for the camera feed
         camera_info_layout.addWidget(self.camera_label)
 
-        # Info Panel
-        self.info_panel = self.create_info_panel()
-        camera_info_layout.addLayout(self.info_panel)
+        # Info panel layout
+        info_panel = self.create_info_panel()
+        camera_info_layout.addWidget(info_panel)
 
-        # Add camera and info layout to main layout
         main_layout.addLayout(camera_info_layout)
 
-        # Add manual barrier control buttons
+        # Add manual control toggle
+        self.add_manual_control_toggle(main_layout)
+
+        # Add manual barrier control buttons (toggled on/off based on checkbox)
         self.add_manual_controls(main_layout)
 
         central_widget.setLayout(main_layout)
-        self.setCentralWidget(central_widget)  # Set the central widget for QMainWindow
+        self.setCentralWidget(central_widget)
 
-    def create_toolbar(self):
-        """Creates the toolbar with actions"""
-        toolbar = QToolBar("Main Toolbar")
+    def create_quick_access_toolbar(self):
+        """Creates a quick access toolbar"""
+        toolbar = QToolBar("Quick Access Toolbar")
         self.addToolBar(toolbar)
 
-        # Settings Action
-        settings_icon_path = "core_system/view/AVBSWindow/icons/settings.png"
-        settings_action = QAction(QIcon(settings_icon_path), "Settings", self)
-        settings_action.setStatusTip("Open Settings")
-        settings_action.triggered.connect(self.open_settings)
+        # Open Barrier button
+        open_action = QAction("Open Barrier", self)
+        open_action.triggered.connect(self.barrier_control.open)
+        toolbar.addAction(open_action)
+
+        # Close Barrier button
+        close_action = QAction("Close Barrier", self)
+        close_action.triggered.connect(self.barrier_control.close)
+        toolbar.addAction(close_action)
+
+        # Settings Action (placeholder)
+        settings_action = QAction("Settings", self)
+        settings_action.triggered.connect(self.open_settings)  # Make sure this method exists
         toolbar.addAction(settings_action)
 
-        # Logs Action
-        logs_icon_path = "core_system/view/AVBSWindow/icons/logs.png"
-        logs_action = QAction(QIcon(logs_icon_path), "View Logs", self)
-        logs_action.setStatusTip("View Access Logs")
-        logs_action.triggered.connect(self.view_logs)
+        # View Logs Action
+        logs_action = QAction("View Logs", self)
+        logs_action.triggered.connect(self.view_logs)  # Ensure this method exists
         toolbar.addAction(logs_action)
 
-        # Add a spacer to push the exit action to the right
-        spacer = QWidget()
-        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        toolbar.addWidget(spacer)
-
         # Exit Action
-        exit_icon_path = "core_system/view/AVBSWindow/icons/exit.png"
-        exit_action = QAction(QIcon(exit_icon_path), "Exit", self)
-        exit_action.setStatusTip("Exit the application")
+        exit_action = QAction("Exit", self)
         exit_action.triggered.connect(self.exit_application)
         toolbar.addAction(exit_action)
 
     def open_settings(self):
-        settings_window = SettingsWindow()
-        settings_window.exec_()
+        print("Open settings clicked")
+        # Code to open settings dialog can be added here
 
     def view_logs(self):
-        print("Logs clicked")
+        print("View logs clicked")
+        # Code to view logs can be added here
 
     def exit_application(self):
         print("Exit clicked")
+        QApplication.instance().quit()
 
     def create_info_panel(self):
-        """ Create a panel to display event information in a modern way """
-        info_layout = QVBoxLayout()
+        """ Create an info panel with a grid layout for better structure """
+        info_panel = QFrame()
+        info_panel.setStyleSheet("""
+            border: 2px solid #dcdcdc;
+            padding: 10px;
+            background-color: #ffffff;
+            border-radius: 8px;
+        """)
+        info_layout = QGridLayout()
 
-        # Detected vehicle image (QLabel)
+        # Detected vehicle image
         self.vehicle_image_label = QLabel(self)
-        self.vehicle_image_label.setFixedSize(300, 300)
+        self.vehicle_image_label.setFixedSize(200, 150)
         self.vehicle_image_label.setStyleSheet("""
             border: 2px solid #27ae60;
-            border-radius: 10px;
+            border-radius: 5px;
         """)
-        info_layout.addWidget(self.vehicle_image_label, alignment=Qt.AlignCenter)
+        info_layout.addWidget(self.vehicle_image_label, 0, 0, 2, 1)
 
-        # Event type label
-        self.event_type_label = QLabel("Event Type: N/A")
-        self.event_type_label.setFont(QFont("Arial", 14))
-        self.event_type_label.setStyleSheet("color: #4c4c4c;")
-        info_layout.addWidget(self.event_type_label)
+        # Event info labels
+        labels = {
+            'Event Type': 'N/A',
+            'Timestamp': 'N/A',
+            'License Plate': 'N/A',
+            'Direction': 'N/A',
+            'Vehicles on Premises': '0'
+        }
+        self.info_labels = {}
 
-        # Timestamp label
-        self.timestamp_label = QLabel("Timestamp: N/A")
-        self.timestamp_label.setFont(QFont("Arial", 14))
-        self.timestamp_label.setStyleSheet("color: #4c4c4c;")
-        info_layout.addWidget(self.timestamp_label)
+        row = 0
+        for key, value in labels.items():
+            label_title = QLabel(f"{key}:")
+            label_title.setFont(QFont("Arial", 14))
+            label_title.setStyleSheet("color: #4c4c4c; font-weight: bold;")
+            info_layout.addWidget(label_title, row, 1)
 
-        # License plate label
-        self.license_plate_label = QLabel("License Plate: N/A")
-        self.license_plate_label.setFont(QFont("Arial", 14))
-        self.license_plate_label.setStyleSheet("color: #4c4c4c;")
-        info_layout.addWidget(self.license_plate_label)
+            label_value = QLabel(value)
+            label_value.setFont(QFont("Arial", 14))
+            label_value.setStyleSheet("color: #4c4c4c;")
+            self.info_labels[key] = label_value
+            info_layout.addWidget(label_value, row, 2)
 
-        # Direction label (IN/OUT)
-        self.direction_label = QLabel("Direction: N/A")
-        self.direction_label.setFont(QFont("Arial", 14))
-        self.direction_label.setStyleSheet("color: #4c4c4c;")
-        info_layout.addWidget(self.direction_label)
+            row += 1
 
-        # Vehicles on premises count
-        self.vehicles_on_premises_label = QLabel("Vehicles on Premises: 0")
-        self.vehicles_on_premises_label.setFont(QFont("Arial", 14))
-        self.vehicles_on_premises_label.setStyleSheet("color: #4c4c4c;")
-        info_layout.addWidget(self.vehicles_on_premises_label)
+        info_panel.setLayout(info_layout)
+        return info_panel
 
-        return info_layout
+    def add_manual_control_toggle(self, layout):
+        """ Add a toggle for manual control """
+        manual_control_layout = QHBoxLayout()
+        self.manual_control_checkbox = QCheckBox("Enable Manual Control")
+        self.manual_control_checkbox.setChecked(self.manual_control_enabled)
+        self.manual_control_checkbox.stateChanged.connect(self.toggle_manual_control)
+        self.manual_control_checkbox.setStyleSheet("font-size: 14px; margin: 10px;")
+
+        manual_control_layout.addWidget(self.manual_control_checkbox)
+        # Add a spacer to align it in the center
+        spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        manual_control_layout.addSpacerItem(spacer)
+        layout.addLayout(manual_control_layout)
+
+    def toggle_manual_control(self, state):
+        """ Toggle the manual control on/off """
+        self.manual_control_enabled = state == Qt.Checked
+        self.open_barrier_button.setVisible(self.manual_control_enabled)
+        self.close_barrier_button.setVisible(self.manual_control_enabled)
 
     def add_manual_controls(self, layout):
         """ Add buttons for manual barrier control """
-        button_layout = QHBoxLayout()
+        self.manual_control_buttons_layout = QHBoxLayout()
 
         # Open Barrier button
         self.open_barrier_button = QPushButton("Open Barrier")
@@ -163,7 +177,7 @@ class AVBSWindow(QMainWindow):  # Changed QWidget to QMainWindow
         """)
         self.open_barrier_button.setFixedHeight(50)
         self.open_barrier_button.clicked.connect(self.barrier_control.open)
-        button_layout.addWidget(self.open_barrier_button)
+        self.manual_control_buttons_layout.addWidget(self.open_barrier_button)
 
         # Close Barrier button
         self.close_barrier_button = QPushButton("Close Barrier")
@@ -176,10 +190,18 @@ class AVBSWindow(QMainWindow):  # Changed QWidget to QMainWindow
         """)
         self.close_barrier_button.setFixedHeight(50)
         self.close_barrier_button.clicked.connect(self.barrier_control.close)
-        button_layout.addWidget(self.close_barrier_button)
+        self.manual_control_buttons_layout.addWidget(self.close_barrier_button)
 
-        # Add buttons to the layout
-        layout.addLayout(button_layout)
+        # Add the buttons layout to the main layout
+        layout.addLayout(self.manual_control_buttons_layout)
+
+        # Initially set buttons visible or hidden based on manual control state
+        self.open_barrier_button.setVisible(self.manual_control_enabled)
+        self.close_barrier_button.setVisible(self.manual_control_enabled)
+
+    def exit_application(self):
+        print("Exit clicked")
+        sys.exit(1)
 
     def update_camera_feed(self, frame):
         """Updates the camera feed QLabel with the given frame"""
@@ -192,32 +214,17 @@ class AVBSWindow(QMainWindow):  # Changed QWidget to QMainWindow
     def update_info_panel(self, event, vehicle_image, vehicles_on_premises_count):
         """ Updates the info panel with event details and the vehicle image """
         if event:
-            # Update event information
-            self.event_type_label.setText(f"Event Type: {event.type.name}")
-            self.timestamp_label.setText(f"Timestamp: {event.time.strftime('%Y-%m-%d %H:%M:%S')}")
-            self.license_plate_label.setText(f"License Plate: {event.registration_number}")
-            self.direction_label.setText(f"Direction: {event.direction}")
-            self.vehicles_on_premises_label.setText(f"Vehicles on Premises: {vehicles_on_premises_count}")
+            self.info_labels['Event Type'].setText(event.type.name)
+            self.info_labels['Timestamp'].setText(event.time.strftime('%Y-%m-%d %H:%M:%S'))
+            self.info_labels['License Plate'].setText(event.registration_number)
+            self.info_labels['Direction'].setText(event.direction)
+            self.info_labels['Vehicles on Premises'].setText(str(vehicles_on_premises_count))
 
-            # Update vehicle image
             vehicle_height, vehicle_width, _ = vehicle_image.shape
-            vehicle_bytes = vehicle_image.tobytes()  # Convert numpy array to bytes
-            vehicle_qimage = QImage(vehicle_bytes, vehicle_width, vehicle_height, vehicle_width * 3,
-                                    QImage.Format_RGB888).rgbSwapped()
-            self.vehicle_image_label.setPixmap(
-                QPixmap.fromImage(vehicle_qimage).scaled(self.vehicle_image_label.size(), Qt.KeepAspectRatio))
+            vehicle_bytes = vehicle_image.tobytes()
+            vehicle_qimage = QImage(vehicle_bytes, vehicle_width, vehicle_height, vehicle_width * 3, QImage.Format_RGB888).rgbSwapped()
+            self.vehicle_image_label.setPixmap(QPixmap.fromImage(vehicle_qimage).scaled(self.vehicle_image_label.size(), Qt.KeepAspectRatio))
 
     def closeEvent(self, event):
         self.barrier_control.stop()
         event.accept()
-
-    def show_error_message(self, message):
-        error_message = QLabel(message)
-        error_message.setStyleSheet("""
-            color: #c0392b;
-            font-size: 16px;
-            font-weight: bold;
-            margin: 10px 0;
-        """)
-        error_message.setAlignment(Qt.AlignCenter)
-        self.layout().addWidget(error_message)

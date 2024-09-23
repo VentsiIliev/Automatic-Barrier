@@ -3,14 +3,15 @@ import traceback
 import pandas as pd
 
 from shared.AccessEventType import AccessEventType
+from shared.CSVFileName import CSVFileName
 from shared.SingletonDatabase import SingletonDatabase
-from admin_dashboard.Settings import Settings
+from admin_dashboard.settings import Settings
 from admin_dashboard.data_managment.ReportType import ReportType
 
-ACCESS_GRANTED_CSV = Settings.ACCESS_GRANTED_CSV
-ACCESS_DENIED_CSV = Settings.ACCESS_DENIED_CSV
-USERS_CSV = Settings.USERS_CSV
-WHITELISTED_CSV = Settings.WHITELISTED_CSV
+ACCESS_GRANTED_CSV = CSVFileName.ACCESS_GRANTED.strip_extension()
+ACCESS_DENIED_CSV = CSVFileName.ACCESS_DENIED.strip_extension()
+USERS_CSV = CSVFileName.USERS.strip_extension()
+WHITELISTED_CSV = CSVFileName.WHITELISTED_VEHICLES.strip_extension()
 
 
 class ReportsGenerator:

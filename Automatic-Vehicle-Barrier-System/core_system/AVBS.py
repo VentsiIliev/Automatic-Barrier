@@ -11,7 +11,7 @@ from shared.SingletonDatabase import SingletonDatabase
 from core_system.API.VehicleDetection import VehicleDetection
 from core_system.view.AVBSWindow.AVBSWindow import AVBSWindow
 from core_system.config.SystemSetting import SystemSetting
-from core_system.config.SettingsManager import SettingsManger
+from core_system.config.SettingsManager import SettingsManager
 from core_system.model.Barrier import Barrier
 from core_system.model.Camera import Camera
 from core_system.model.LicencePlateDetector import LicencePlateDetector
@@ -28,7 +28,7 @@ class AVBS:
     def __init__(self):
         # Initialize components
 
-        self.settings_manager = SettingsManger()
+        self.settings_manager = SettingsManager()
         self.settings = self.settings_manager.load_all_settings()
         self.system_settings = self.settings.get_system_settings()
         self.camera_settings = self.settings.get_camera_settings()
