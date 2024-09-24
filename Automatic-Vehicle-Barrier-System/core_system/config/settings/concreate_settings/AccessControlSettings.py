@@ -30,9 +30,9 @@ class AccessControlSettings:
         try:
             with open(filename, 'r') as file:
                 data = eval(file.read())
-                self.enforce_access_control = data.get("enforce access control", False)
-                self.workday_start_time = data.get("workday start time", "08:00")
-                self.workday_end_time = data.get("workday end time", "17:00")
+                self.enforce_access_control = data.get("enforce_access_control", False)
+                self.workday_start_time = data.get("workday_start_time", "08:00")
+                self.workday_end_time = data.get("workday_end_time", "17:00")
         except FileNotFoundError:
             print(f"{filename} not found. Using default settings.")
 
@@ -46,3 +46,12 @@ class AccessControlSettings:
         print(f"Enforce Access Control: {self.enforce_access_control}")
         print(f"Workday Start Time: {self.workday_start_time}")
         print(f"Workday End Time: {self.workday_end_time}")
+
+    def get_enforce_access_control(self):
+        return self.enforce_access_control
+
+    def get_workday_start_time(self):
+        return self.workday_start_time
+
+    def get_workday_end_time(self):
+        return self.workday_end_time

@@ -5,7 +5,7 @@ class CameraSettings(Settings):
     def __init__(self):
         super().__init__()
         # Initialize default camera settings
-        self.set_value("index", 0)
+        self.set_value("index", 1)
         self.set_value("width", 1280)
         self.set_value("height", 720)
 
@@ -17,9 +17,25 @@ class CameraSettings(Settings):
         """Get the camera index."""
         return self.get_value("index")
 
+    def get_camera_width(self):
+        """Get the camera width."""
+        return self.get_value("width")
+
+    def get_camera_height(self):
+        """Get the camera height."""
+        return self.get_value("height")
+
     def set_resolution(self, width, height):
         """Set the camera resolution."""
         self.set_value("width", width)
+        self.set_value("height", height)
+
+    def set_width(self, width):
+        """Set the camera width."""
+        self.set_value("width", width)
+
+    def set_height(self, height):
+        """Set the camera height."""
         self.set_value("height", height)
 
     def get_resolution(self):

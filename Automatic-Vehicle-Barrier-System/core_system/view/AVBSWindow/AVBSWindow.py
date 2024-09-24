@@ -14,9 +14,12 @@ class AVBSWindow(QMainWindow):
     WINDOW_TITLE = "AVBS - Automated Vehicle Barrier System"
     SYSTEM_STATUS_ONLINE = "System Online"
     SYSTEM_STATUS_OFFLINE = "System Offline"
-    def __init__(self, barrier_control):
+
+    def __init__(self, barrier_control, settings_manager, camera_controller):
         super().__init__()
         self.barrier_control = barrier_control
+        self.settings_manager = settings_manager
+        self.camera_controller = camera_controller
         self.last_frame_time = time.time()
 
         # Setup the window
@@ -77,8 +80,8 @@ class AVBSWindow(QMainWindow):
         close_action.triggered.connect(self.barrier_control.close)
         toolbar.addAction(close_action)
 
-        # Settings Action (placeholder)
-        settings_action = QAction("Settings", self)
+        # settings Action (placeholder)
+        settings_action = QAction("settings", self)
         settings_action.triggered.connect(self.open_settings)  # Make sure this method exists
         toolbar.addAction(settings_action)
 
@@ -96,13 +99,11 @@ class AVBSWindow(QMainWindow):
         print("Open settings clicked")
         # settings_window = SettingsWindow(self.settings_manager)
         try:
-            settings_window = SettingsWindow()
+            settings_window = SettingsWindow(self.settings_manager, self.camera_controller)
             settings_window.exec_()
         except Exception as e:
             traceback.print_exc()
             print("Failed to open settings window:", e)
-
-
 
     def view_logs(self):
         print("View logs clicked")

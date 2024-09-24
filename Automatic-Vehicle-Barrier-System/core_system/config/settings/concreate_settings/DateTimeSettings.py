@@ -35,5 +35,11 @@ class DateTimeSettings:
         with open(filename, "w") as file:
             json.dump(settings_data, file, indent=4)
 
+    def get_date_format(self):
+        return self.date_format
+
+    def get_time_format(self):
+        return self.time_format
+
     def __repr__(self):
         return f"DateTimeSettings(date_format='{self.date_format}', time_format='{self.time_format}')"

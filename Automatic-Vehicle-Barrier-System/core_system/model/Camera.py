@@ -9,6 +9,8 @@
 * -----------------------------------------------------------------
 *
 """
+import threading
+
 import cv2
 import numpy as np  # Import numpy
 
@@ -42,9 +44,9 @@ class Camera:
             width (int): The width of the camera feed.
             height (int): The height of the camera feed.
         """
-        self.setCameraIndex(settings[CameraSetting.INDEX.value])
-        self.setWidth(int(settings[CameraSetting.WIDTH.value]))
-        self.setHeight(int(settings[CameraSetting.HEIGHT.value]))
+        self.setCameraIndex(int(settings.get_camera_index()))
+        self.setWidth(int(settings.get_camera_width()))
+        self.setHeight(int(settings.get_camera_height()))
 
         self.cap = self.initCap(self.cameraIndex, self.width, self.height)
 
@@ -120,5 +122,21 @@ class Camera:
     def stopCapture(self):
         self.cap.release()
 
+    def _update_cap(self):
+        new_cap = self.initCap(self.cameraIndex, self.width, self.height)
+        self.cap.release()
+        self.cap = new_cap
 
+    def restart(self, settings):
+        # start new thread for creating new cap object
 
+        self.setCameraIndex(int(settings.get_camera_index()))
+        self.setWidth(int(settings.get_camera_width()))
+        self.setHeight(int(settings.get_camera_height()))
+        self.cap = self.initCap(self.cameraIndex, self.width, self.height)
+        threading.Thread(target=self._update_cap, args=()).start()
+        # new_cap = self.initCap(self.cameraIndex, self.width, self.height)
+        # self.cap.release()
+        # self.cap = new_cap
+        print("Camera restarted camera index, width , height:", self.cameraIndex, "width:", self.width, "height:",
+              self.height)

@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QLabel
 
-
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QLabel
 
+
 class BaseTab(QWidget):
-    def __init__(self):
+    def __init__(self, ):
         super().__init__()
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(15, 15, 15, 15)  # Set padding for all tabs
@@ -13,8 +13,8 @@ class BaseTab(QWidget):
         # self.add_save_button()
 
     def add_save_button(self):
-        # Define the Save Settings button before adding it to the layout
-        self.save_button = QPushButton("Save Settings")
+        # Define the Save settings button before adding it to the layout
+        self.save_button = QPushButton("Save settings")
         self.save_button.clicked.connect(self.save_settings)
         self.layout.addWidget(self.save_button)
 

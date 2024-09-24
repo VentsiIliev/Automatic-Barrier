@@ -10,11 +10,13 @@ from core_system.view.settings_window.conreate_tabs.SystemSettingsTab import Sys
 
 
 class SettingsWindow(QDialog):
-    def __init__(self):
+    def __init__(self,settings_manager,camera_controller):
         super().__init__()
 
-        # Window Settings
-        self.setWindowTitle("Settings")
+        # Window settings
+        self.settings_manager = settings_manager
+        self.camera_controller = camera_controller
+        self.setWindowTitle("settings")
         self.setGeometry(200, 200, 600, 600)
         self.setStyleSheet("""
             QDialog {
@@ -61,7 +63,7 @@ class SettingsWindow(QDialog):
         layout = QVBoxLayout()
 
         # Header
-        header = QLabel("Settings")
+        header = QLabel("settings")
         header.setFont(QFont("Arial", 22, QFont.Bold))
         header.setAlignment(Qt.AlignCenter)
         header.setStyleSheet("color: #007BFF; padding: 10px 0;")
@@ -69,11 +71,11 @@ class SettingsWindow(QDialog):
 
         # Tab widget
         self.tab_widget = QTabWidget()
-        self.tab_widget.addTab(CameraTab(), "Camera")
-        self.tab_widget.addTab(SystemTab(), "System")
-        self.tab_widget.addTab(DateTimeTab(), "Date & Time")
-        self.tab_widget.addTab(AccessControlTab(), "Access Control")
-        self.tab_widget.addTab(DatabaseTab(), "Database")
+        self.tab_widget.addTab(CameraTab(self.settings_manager,self.camera_controller), "Camera")
+        self.tab_widget.addTab(SystemTab(self.settings_manager), "System")
+        self.tab_widget.addTab(DateTimeTab(self.settings_manager), "Date & Time")
+        self.tab_widget.addTab(AccessControlTab(self.settings_manager), "Access Control")
+        self.tab_widget.addTab(DatabaseTab(self.settings_manager), "Database")
 
         layout.addWidget(self.tab_widget)
 
