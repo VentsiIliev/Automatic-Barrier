@@ -47,9 +47,9 @@ class AVBS:
 
         # Access control setup
         # self.database = Database("database/access_events_logs.csv")
-        if self.settings_manager.get_enforce_access_control():
-            working_hours = f"{self.settings_manager.get_workday_start_time()}-{self.settings_manager.get_workday_end_time()}"
-            self.access_control = AccessControl(working_hours)
+        # if self.settings_manager.get_enforce_access_control():
+        working_hours = f"{self.settings_manager.get_workday_start_time()}-{self.settings_manager.get_workday_end_time()}"
+        self.access_control = AccessControl(working_hours)
 
         self.barrier = Barrier()
         self.barrier_control = BarrierControl(self.barrier)
